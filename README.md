@@ -25,3 +25,8 @@ generate-doc-site nu-salesforce/nu-salesforce site
 ## Installation
 
 I recommend using [Quiver](https://github.com/freepicheep/quiver). If you have quiver installed, add this to your project with `qv add freepicheep/nu-doc-gen`. You can also install it globally with `qv add -g freepicheep/nu-doc-gen` and follow the instructions for adding the module to your `$env.NU_LIB_DIRS` so you can use it at any time.
+
+## Examples
+
+- I built documentation for nu-doc-gen using itself. :) It's [here](https://freepicheep.github.io/nu-doc-gen/).
+- A more robust example for a Salesforce api wrapper: [nu-salesforce](https://freepicheep.github.io/nu-salesforce/)
