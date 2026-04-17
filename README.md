@@ -30,3 +30,9 @@ I recommend using [Quiver](https://github.com/freepicheep/quiver). If you have q
 
 - I built documentation for nu-doc-gen using itself. :) It's [here](https://freepicheep.github.io/nu-doc-gen/).
 - A more robust example for a Salesforce api wrapper: [nu-salesforce](https://freepicheep.github.io/nu-salesforce/)
+
+## Credit
+
+- I used LLMs extensively to help with the project.
+- The wonderful [Shiki](https://shiki.style/) project for Nu code block highlighting.
+- The wonderful [Fuse.js](https://www.fusejs.io/) for search.
