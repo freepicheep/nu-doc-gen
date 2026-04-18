@@ -1,8 +1,6 @@
 # nu-doc-gen
 
-This is a simple Nu module to generate markdown documentation for Nu modules.
-
-You can see the example on itself in [docs/nu-doc-gen.md](docs/nu-doc-gen.md).
+This is a simple Nu module to generate markdown documentation and static sites for Nu modules.
 
 ## Commands
 
