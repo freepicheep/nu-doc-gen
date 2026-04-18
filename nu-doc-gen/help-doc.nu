@@ -42,7 +42,9 @@ export def render-definition-list-html [items: list<record<name: string, descrip
         | str join "\n"
     )
 
-    $"<dl class=\"def-list\">\n($rendered)\n</dl>"
+    $"<dl class=\"def-list\">
+($rendered)
+</dl>"
 }
 
 export def parse-examples [lines: list<string>] {
@@ -145,7 +147,9 @@ export def render-io-table-html [table: record<header: list<string>, rows: list<
             | str join "\n"
         )
 
-        $"<table class=\"io-table\"><thead><tr>($head)</tr></thead><tbody>\n($rows)\n</tbody></table>"
+        $"<table class=\"io-table\"><thead><tr>($head)</tr></thead><tbody>
+($rows)
+</tbody></table>"
     }
 }
 
@@ -275,7 +279,9 @@ export def render-section-html [section: record] {
     if (($body | str trim) == '') {
         ''
     } else {
-        $"<section class=\"doc-section\"><h3>(html-escape $section.header)</h3>\n($body)\n</section>"
+        $"<section class=\"doc-section\"><h3>(html-escape $section.header)</h3>
+($body)
+</section>"
     }
 }
 
@@ -293,5 +299,8 @@ export def render-command-html [doc: record] {
         | str join "\n"
     )
 
-    $"<article class=\"command-section\" id=\"($doc.slug)\"><h2><code>(html-escape $doc.name)</code></h2>\n($description)\n($sections)\n</article>"
+    $"<article class=\"command-section\" id=\"($doc.slug)\"><h2><code>(html-escape $doc.name)</code></h2>
+($description)
+($sections)
+</article>"
 }

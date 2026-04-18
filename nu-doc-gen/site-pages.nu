@@ -14,51 +14,49 @@ export def render-site-shell [
     let lead_html = if (($page_lead | str trim) == '') { '' } else { $"<p class=\"page-lead\">(html-escape $page_lead)</p>" }
     let title_html = (html-escape $page_title)
 
-    [
-        '<!doctype html>'
-        '<html lang="en">'
-        '<head>'
-        '  <meta charset="utf-8">'
-        '  <meta name="viewport" content="width=device-width, initial-scale=1">'
-        $"  <title>($title_html)</title>"
-        $"  <meta name=\"description\" content=\"(html-escape $page_lead)\">"
-        '  <link rel="stylesheet" href="assets/site.css">'
-        '</head>'
-        '<body>'
-        '  <div class="layout">'
-        '    <aside class="sidebar">'
-        '      <div class="sidebar-header">'
-        '        <p class="eyebrow">Nu Module Docs</p>'
-        $"        <h1 class=\"site-title\">(html-escape $site_title)</h1>"
-        $'        ($summary_html)'
-        '      </div>'
-        '      <button class="sidebar-toggle" data-nav-toggle>Sections</button>'
-        '      <div class="sidebar-nav" data-nav>'
-        '        <div class="nav-search-wrap">'
-        '          <input class="nav-search" type="search" placeholder="Filter categories or commands" autocomplete="off" spellcheck="false" data-nav-search>'
-        '          <div class="nav-search-dropdown" hidden data-search-dropdown></div>'
-        '        </div>'
-        $"        ($nav_html)"
-        '      </div>'
-        '    </aside>'
-        '    <div class="content-wrap">'
-        '      <header class="page-header">'
-        '        <div class="page-header-inner">'
-        $"          <h1 class=\"page-title\">($title_html)</h1>"
-        $'          ($lead_html)'
-        '        </div>'
-        '      </header>'
-        '      <main class="page-content">'
-        $"        ($body_html)"
-        '      </main>'
-        '    </div>'
-        '  </div>'
-        $"  <script type=\"application/json\" id=\"search-index\">($search_index_json)</script>"
-        '  <script src="assets/fuse.min.js"></script>'
-        '  <script type="module" src="assets/site.js"></script>'
-        '</body>'
-        '</html>'
-    ] | str join "\n"
+    $"<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>($title_html)</title>
+  <meta name=\"description\" content=\"(html-escape $page_lead)\">
+  <link rel=\"stylesheet\" href=\"assets/site.css\">
+</head>
+<body>
+  <div class=\"layout\">
+    <aside class=\"sidebar\">
+      <div class=\"sidebar-header\">
+        <p class=\"eyebrow\">Nu Module Docs</p>
+        <h1 class=\"site-title\">(html-escape $site_title)</h1>
+        ($summary_html)
+      </div>
+      <button class=\"sidebar-toggle\" data-nav-toggle>Sections</button>
+      <div class=\"sidebar-nav\" data-nav>
+        <div class=\"nav-search-wrap\">
+          <input class=\"nav-search\" type=\"search\" placeholder=\"Filter categories or commands\" autocomplete=\"off\" spellcheck=\"false\" data-nav-search>
+          <div class=\"nav-search-dropdown\" hidden data-search-dropdown></div>
+        </div>
+        ($nav_html)
+      </div>
+    </aside>
+    <div class=\"content-wrap\">
+      <header class=\"page-header\">
+        <div class=\"page-header-inner\">
+          <h1 class=\"page-title\">($title_html)</h1>
+          ($lead_html)
+        </div>
+      </header>
+      <main class=\"page-content\">
+        ($body_html)
+      </main>
+    </div>
+  </div>
+  <script type=\"application/json\" id=\"search-index\">($search_index_json)</script>
+  <script src=\"assets/fuse.min.js\"></script>
+  <script type=\"module\" src=\"assets/site.js\"></script>
+</body>
+</html>"
 }
 
 export def render-search-index-json [model: record] {
@@ -121,26 +119,22 @@ export def render-nav-html [model: record, current_slug?: string] {
                 ''
             }
 
-            [
-                $"<li data-category-item data-search=\"(html-escape $category_search)\">"
-                $"  <a class=\"nav-link($active_class)\" href=\"($category.slug).html\">(html-escape $category.title)</a>"
-                $"  ($subnav)"
-                '</li>'
-            ] | str join "\n"
+            $"<li data-category-item data-search=\"(html-escape $category_search)\">
+  <a class=\"nav-link($active_class)\" href=\"($category.slug).html\">(html-escape $category.title)</a>
+  ($subnav)
+</li>"
         }
         | str join "\n"
     )
 
-    [
-        '<p class="nav-group-title">Overview</p>'
-        '<ul class="nav-list">'
-        $"  <li><a class=\"nav-link($overview_active)\" href=\"index.html\">Introduction</a></li>"
-        '</ul>'
-        '<p class="nav-group-title">Categories</p>'
-        '<ul class="nav-list">'
-        $category_links
-        '</ul>'
-    ] | str join "\n"
+    $"<p class=\"nav-group-title\">Overview</p>
+<ul class=\"nav-list\">
+  <li><a class=\"nav-link($overview_active)\" href=\"index.html\">Introduction</a></li>
+</ul>
+<p class=\"nav-group-title\">Categories</p>
+<ul class=\"nav-list\">
+($category_links)
+</ul>"
 }
 
 export def render-index-page [model: record] {
@@ -154,14 +148,12 @@ export def render-index-page [model: record] {
             } else {
                 $"<p class=\"overview-desc\">(html-escape $category.description)</p>"
             }
-            [
-                '<article class="overview-item">'
-                $"  <h2>(html-escape $category.title)</h2>"
-                $"  <p class=\"overview-meta\">($category.commands | length) commands</p>"
-                $"  ($desc)"
-                $"  <a class=\"overview-link\" href=\"($category.slug).html\">Open category</a>"
-                '</article>'
-            ] | str join "\n"
+            $"<article class=\"overview-item\">
+  <h2>(html-escape $category.title)</h2>
+  <p class=\"overview-meta\">($category.commands | length) commands</p>
+  ($desc)
+  <a class=\"overview-link\" href=\"($category.slug).html\">Open category</a>
+</article>"
         }
         | str join "\n"
     }
@@ -178,12 +170,10 @@ export def render-index-page [model: record] {
         $"<span class=\"summary-pill\">Source mode: (if $model.source_mode { 'multi-file' } else { 'single-file' })</span>"
     ] | str join "\n"
 
-    let body = [
-        $"<div class=\"summary-strip\">($strip)</div>"
-        '<section class="overview-list">'
-        $overview_items
-        '</section>'
-    ] | str join "\n"
+    let body = $"<div class=\"summary-strip\">($strip)</div>
+<section class=\"overview-list\">
+($overview_items)
+</section>"
 
     render-site-shell $model.name $model.summary_short $model.name $lead (render-nav-html $model) (render-search-index-json $model) $body
 }
@@ -207,10 +197,10 @@ export def render-category-page [model: record, category: record] {
         | str join "\n"
     }
 
-    let body = [
-        $"<div class=\"summary-strip\">($strip)</div>"
-        $"<section class=\"command-stack\">\n($sections)\n</section>"
-    ] | str join "\n"
+    let body = $"<div class=\"summary-strip\">($strip)</div>
+<section class=\"command-stack\">
+($sections)
+</section>"
 
     render-site-shell $model.name $model.summary_short $category.title $lead (render-nav-html $model $category.slug) (render-search-index-json $model) $body
 }
