@@ -266,6 +266,7 @@ a:hover {
 .page-content {
     width: min(calc(100% - 4rem), var(--content-width));
     margin: 0 auto;
+    min-width: 0;
 }
 
 .page-header-inner {
@@ -292,6 +293,7 @@ a:hover {
     flex-wrap: wrap;
     gap: 0.8rem;
     margin: 1.2rem 0 1.5rem;
+    min-width: 0;
 }
 
 .summary-pill {
@@ -301,6 +303,7 @@ a:hover {
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
     font-size: 0.92rem;
+    max-width: 100%;
 }
 
 .page-content {
@@ -311,6 +314,7 @@ a:hover {
 .overview-list {
     display: grid;
     gap: 1rem;
+    min-width: 0;
 }
 
 .overview-item,
@@ -320,6 +324,8 @@ a:hover {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    min-width: 0;
+    max-width: 100%;
 }
 
 .overview-item {
@@ -355,6 +361,7 @@ a:hover {
 .command-stack {
     display: grid;
     gap: 1.1rem;
+    min-width: 0;
 }
 
 .command-section {
@@ -371,12 +378,14 @@ a:hover {
 .section-text p {
     margin: 0.75rem 0 0;
     line-height: 1.7;
+    overflow-wrap: anywhere;
 }
 
 .doc-section {
     margin-top: 1.25rem;
     padding-top: 1.1rem;
     border-top: 1px solid var(--surface-muted);
+    min-width: 0;
 }
 
 .doc-section h3 {
@@ -446,6 +455,7 @@ code {
     display: grid;
     gap: 0.8rem;
     margin: 0.95rem 0 0;
+    min-width: 0;
 }
 
 .def-item {
@@ -453,6 +463,7 @@ code {
     border-radius: var(--radius);
     background: var(--surface);
     border: 1px solid var(--border);
+    min-width: 0;
 }
 
 .def-item dt {
@@ -467,11 +478,32 @@ code {
 
 .io-table {
     width: 100%;
+    max-width: 100%;
     margin-top: 0.9rem;
     border-collapse: collapse;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+}
+
+.command-section > *,
+.doc-section > *,
+.def-item > * {
+    min-width: 0;
+    max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p,
+dd,
+th,
+td,
+li,
+a,
+code {
+    overflow-wrap: anywhere;
 }
 
 .io-table th,
