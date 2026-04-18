@@ -29,11 +29,8 @@ jobs:
       - name: Add Quiver to PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Create project environment
-        run: qv init
-
       - name: Install nu-doc-gen
-        run: qv install freepicheep/nu-doc-gen
+        run: qv add freepicheep/nu-doc-gen
 
       - name: Build documentation site
         run: qv run nu 'use nu-doc-gen *; generate-doc-site nu-doc-gen/ site/'
