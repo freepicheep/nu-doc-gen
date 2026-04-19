@@ -33,7 +33,7 @@ jobs:
         run: qv add freepicheep/nu-doc-gen
 
       - name: Build documentation site
-        run: qv run nu 'use nu-doc-gen *; generate-doc-site nu-doc-gen/ site/'
+        run: qv run nu -c 'use nu-doc-gen *; generate-doc-site nu-doc-gen/ site/'
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
