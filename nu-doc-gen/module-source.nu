@@ -1,11 +1,11 @@
-use text.nu [quote-nu-string slugify first-paragraph strip-comment-prefix]
-use help-doc.nu [parse-help-doc]
+use text.nu [ quote-nu-string slugify first-paragraph strip-comment-prefix ]
+use help-doc.nu [ parse-help-doc ]
 
 export def extract-file-summary [file_path: string] {
     let lines = (open --raw $file_path | lines)
     let summary_lines = (
         $lines
-        | reduce --fold {started: false done: false summary: []} {|line, acc|
+        | reduce --fold {started: false done: false summary: []} {|line acc|
             if $acc.done {
                 $acc
             } else {
@@ -41,13 +41,8 @@ export def extract-file-summary [file_path: string] {
     $summary_lines | str join "\n" | str trim
 }
 
-export def nu-bin [] {
-    which nu | get -o 0.path | default '/opt/homebrew/bin/nu'
-}
-
 export def run-nu-script [script: string] {
-    let nu_path = (nu-bin)
-    let result = (^$nu_path -c $script | complete)
+    let result = (nu -c $script | complete)
     if $result.exit_code != 0 {
         error make {
             msg: $'Nu command failed: ($result.stderr | str trim)'
@@ -119,7 +114,7 @@ export def collect-file-commands [file_path: string] {
     }
 }
 
-export def collect-command-doc [file_path: string, command_name: string] {
+export def collect-command-doc [file_path: string command_name: string] {
     let file_literal = (quote-nu-string ($file_path | path expand))
     let command_literal = (quote-nu-string $command_name)
     let help_output = (run-nu-script $'use ($file_literal) *; help ($command_literal) | ansi strip')
