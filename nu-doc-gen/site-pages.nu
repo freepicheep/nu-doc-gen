@@ -13,6 +13,17 @@ export def render-site-shell [
     let summary_html = if (($site_summary | str trim) == '') { '' } else { $"<p class=\"site-summary\">(html-escape $site_summary)</p>" }
     let lead_html = if (($page_lead | str trim) == '') { '' } else { $"<p class=\"page-lead\">(html-escape $page_lead)</p>" }
     let title_html = (html-escape $page_title)
+    let theme_bootstrap = '<script>
+    (() => {
+      try {
+        const theme = localStorage.getItem("nu-doc-gen.theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {
+      }
+    })();
+  </script>'
 
     $"<!doctype html>
 <html lang=\"en\">
@@ -21,6 +32,7 @@ export def render-site-shell [
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
   <title>($title_html)</title>
   <meta name=\"description\" content=\"(html-escape $page_lead)\">
+  ($theme_bootstrap)
   <link rel=\"stylesheet\" href=\"assets/site.css\">
 </head>
 <body>
@@ -51,6 +63,26 @@ export def render-site-shell [
         ($body_html)
       </main>
     </div>
+  </div>
+  <div class=\"theme-picker\" data-theme-picker>
+    <div class=\"theme-menu\" role=\"menu\" hidden data-theme-menu>
+      <button class=\"theme-choice\" type=\"button\" role=\"menuitemradio\" data-theme-choice=\"system\">
+        <span class=\"theme-choice-icon theme-icon-system\" aria-hidden=\"true\"></span>
+        <span>System</span>
+      </button>
+      <button class=\"theme-choice\" type=\"button\" role=\"menuitemradio\" data-theme-choice=\"light\">
+        <span class=\"theme-choice-icon theme-icon-light\" aria-hidden=\"true\"></span>
+        <span>Light</span>
+      </button>
+      <button class=\"theme-choice\" type=\"button\" role=\"menuitemradio\" data-theme-choice=\"dark\">
+        <span class=\"theme-choice-icon theme-icon-dark\" aria-hidden=\"true\"></span>
+        <span>Dark</span>
+      </button>
+    </div>
+    <button class=\"theme-toggle\" type=\"button\" aria-label=\"Choose color theme\" aria-haspopup=\"menu\" aria-expanded=\"false\" data-theme-toggle data-theme-mode=\"system\">
+      <span class=\"theme-toggle-icon\" aria-hidden=\"true\" data-theme-toggle-icon></span>
+      <span data-theme-toggle-label>Theme</span>
+    </button>
   </div>
   <script type=\"application/json\" id=\"search-index\">($search_index_json)</script>
   <script src=\"assets/fuse.min.js\"></script>

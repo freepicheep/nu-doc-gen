@@ -3,7 +3,11 @@ export def site-css [] {
 :root {
     color-scheme: light dark;
     --bg: #f7f4ef;
+    --bg-start: #fbf8f2;
+    --bg-end: #f4efe6;
     --surface: #fffdf9;
+    --surface-alpha: rgba(255, 253, 249, 0.8);
+    --sidebar-bg: rgba(255, 253, 249, 0.94);
     --surface-strong: #f0e6d9;
     --surface-muted: #ebe4d7;
     --text: #1e241e;
@@ -21,6 +25,54 @@ export def site-css [] {
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+[data-theme="light"] {
+    color-scheme: light;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #191724;
+    --bg-start: #1f1d2e;
+    --bg-end: #191724;
+    --surface: #1f1d2e;
+    --surface-alpha: rgba(31, 29, 46, 0.88);
+    --sidebar-bg: rgba(25, 23, 36, 0.94);
+    --surface-strong: #26233a;
+    --surface-muted: #2a273f;
+    --text: #e0def4;
+    --muted: #908caa;
+    --border: #403d52;
+    --accent: #9ccfd8;
+    --accent-strong: #c4a7e7;
+    --accent-soft: #26233a;
+    --code-bg: #191724;
+    --code-text: #e0def4;
+    --shadow: 0 18px 42px rgba(6, 5, 10, 0.42);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg: #191724;
+        --bg-start: #1f1d2e;
+        --bg-end: #191724;
+        --surface: #1f1d2e;
+        --surface-alpha: rgba(31, 29, 46, 0.88);
+        --sidebar-bg: rgba(25, 23, 36, 0.94);
+        --surface-strong: #26233a;
+        --surface-muted: #2a273f;
+        --text: #e0def4;
+        --muted: #908caa;
+        --border: #403d52;
+        --accent: #9ccfd8;
+        --accent-strong: #c4a7e7;
+        --accent-soft: #26233a;
+        --code-bg: #191724;
+        --code-text: #e0def4;
+        --shadow: 0 18px 42px rgba(6, 5, 10, 0.42);
+    }
+}
+
 * {
     box-sizing: border-box;
 }
@@ -35,8 +87,9 @@ html {
 
 body {
     margin: 0;
-    background: linear-gradient(180deg, #fbf8f2 0%, #f4efe6 100%);
+    background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
     color: var(--text);
+    transition: background-color 180ms ease, color 180ms ease;
 }
 
 a {
@@ -59,8 +112,8 @@ a:hover {
     top: 0;
     height: 100vh;
     overflow-y: auto;
-    padding: 1.5rem 1rem 2rem;
-    background: rgba(255, 253, 249, 0.94);
+    padding: 1.5rem 1rem 5rem;
+    background: var(--sidebar-bg);
     border-right: 1px solid var(--border);
     backdrop-filter: blur(14px);
     view-transition-name: sidebar;
@@ -320,7 +373,7 @@ a:hover {
 .overview-item,
 .command-section,
 .empty-state {
-    background: rgba(255, 253, 249, 0.8);
+    background: var(--surface-alpha);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -421,7 +474,6 @@ pre[data-shiki-lang] {
     overflow-x: auto;
     border-radius: var(--radius);
     padding: 0.95rem 1rem;
-    background: var(--shiki-light-bg) !important;
     border: 1px solid var(--border);
     line-height: 1.55;
     font-size: 0.94rem;
@@ -536,6 +588,131 @@ code {
     color: var(--muted);
 }
 
+.theme-picker {
+    position: fixed;
+    z-index: 20;
+    left: 1rem;
+    bottom: 1rem;
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.theme-toggle:hover {
+    background: var(--accent-soft);
+}
+
+.theme-toggle-icon {
+    width: 0.86rem;
+    height: 0.86rem;
+    border-radius: 999px;
+    flex: 0 0 auto;
+    background: linear-gradient(90deg, var(--text) 0 50%, var(--surface-muted) 50% 100%);
+    border: 1px solid var(--accent-strong);
+}
+
+.theme-toggle[data-theme-mode="light"] .theme-toggle-icon {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+    box-shadow:
+        0 -0.38rem 0 -0.28rem var(--accent-strong),
+        0 0.38rem 0 -0.28rem var(--accent-strong),
+        0.38rem 0 0 -0.28rem var(--accent-strong),
+        -0.38rem 0 0 -0.28rem var(--accent-strong),
+        0.27rem 0.27rem 0 -0.3rem var(--accent-strong),
+        -0.27rem 0.27rem 0 -0.3rem var(--accent-strong),
+        0.27rem -0.27rem 0 -0.3rem var(--accent-strong),
+        -0.27rem -0.27rem 0 -0.3rem var(--accent-strong);
+}
+
+.theme-toggle[data-theme-mode="dark"] .theme-toggle-icon {
+    background: var(--accent-strong);
+    border-color: transparent;
+    box-shadow: inset -0.25rem -0.18rem 0 var(--surface);
+}
+
+.theme-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 0.45rem);
+    min-width: 10rem;
+    padding: 0.35rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    transform-origin: bottom left;
+    animation: theme-menu-in 140ms ease;
+}
+
+.theme-menu[hidden] {
+    display: none;
+}
+
+.theme-choice {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.theme-choice:hover,
+.theme-choice[aria-checked="true"] {
+    background: var(--accent-soft);
+}
+
+.theme-choice-icon {
+    width: 0.86rem;
+    height: 0.86rem;
+    border-radius: 999px;
+    flex: 0 0 auto;
+}
+
+.theme-icon-system {
+    background: linear-gradient(90deg, var(--text) 0 50%, var(--surface-muted) 50% 100%);
+    border: 1px solid var(--accent-strong);
+}
+
+.theme-icon-light {
+    background: var(--accent-strong);
+    border: 1px solid var(--accent-strong);
+    box-shadow:
+        0 -0.38rem 0 -0.28rem var(--accent-strong),
+        0 0.38rem 0 -0.28rem var(--accent-strong),
+        0.38rem 0 0 -0.28rem var(--accent-strong),
+        -0.38rem 0 0 -0.28rem var(--accent-strong),
+        0.27rem 0.27rem 0 -0.3rem var(--accent-strong),
+        -0.27rem 0.27rem 0 -0.3rem var(--accent-strong),
+        0.27rem -0.27rem 0 -0.3rem var(--accent-strong),
+        -0.27rem -0.27rem 0 -0.3rem var(--accent-strong);
+}
+
+.theme-icon-dark {
+    background: var(--accent-strong);
+    box-shadow: inset -0.25rem -0.18rem 0 var(--surface);
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation-duration: 180ms;
@@ -576,6 +753,18 @@ code {
     }
 }
 
+@keyframes theme-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
@@ -588,6 +777,7 @@ code {
 
     .nav-sublist,
     .nav-search-dropdown,
+    .theme-menu,
     ::view-transition-old(root),
     ::view-transition-new(root),
     ::view-transition-old(sidebar),
@@ -610,7 +800,7 @@ code {
         height: auto;
         border-right: 0;
         border-bottom: 1px solid var(--border);
-        padding-bottom: 1rem;
+        padding-bottom: 4.5rem;
     }
 
     .sidebar-toggle {
@@ -638,8 +828,17 @@ import { codeToHtml } from "https://esm.sh/shiki@4.0.2";
 
 const SHIKI_VERSION = "4.0.2";
 const SHIKI_SELECTOR = 'pre[data-shiki-lang="nushell"]';
-const SHIKI_THEME = "rose-pine-dawn";
+const SHIKI_THEMES = {
+  light: "rose-pine-dawn",
+  dark: "rose-pine",
+};
 const toggle = document.querySelector("[data-nav-toggle]");
+const themePicker = document.querySelector("[data-theme-picker]");
+const themeToggle = document.querySelector("[data-theme-toggle]");
+const themeToggleLabel = document.querySelector("[data-theme-toggle-label]");
+const themeToggleIcon = document.querySelector("[data-theme-toggle-icon]");
+const themeMenu = document.querySelector("[data-theme-menu]");
+const themeChoices = Array.from(document.querySelectorAll("[data-theme-choice]"));
 const sidebar = document.querySelector(".sidebar");
 const nav = document.querySelector("[data-nav]");
 const search = document.querySelector("[data-nav-search]");
@@ -647,6 +846,10 @@ const searchDropdown = document.querySelector("[data-search-dropdown]");
 const searchIndexNode = document.getElementById("search-index");
 const commandLinks = Array.from(document.querySelectorAll("[data-command-link]"));
 const sidebarScrollKey = "nu-doc-gen.sidebar-scroll-top";
+const themeStorageKey = "nu-doc-gen.theme";
+const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+const themeModes = ["system", "light", "dark"];
+let highlightRunId = 0;
 const sections = commandLinks
   .map((link) => {
     const hash = link.getAttribute("href")?.split("#")[1];
@@ -656,6 +859,119 @@ const sections = commandLinks
     return { link, target };
   })
   .filter(Boolean);
+
+const getStoredTheme = () => {
+  try {
+    const theme = localStorage.getItem(themeStorageKey);
+    return themeModes.includes(theme) ? theme : "system";
+  } catch {
+    return "system";
+  }
+};
+
+const getEffectiveTheme = () => {
+  const storedTheme = getStoredTheme();
+  if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
+  return systemTheme.matches ? "dark" : "light";
+};
+
+const applyTheme = () => {
+  const storedTheme = getStoredTheme();
+
+  if (storedTheme === "light" || storedTheme === "dark") {
+    document.documentElement.dataset.theme = storedTheme;
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+
+  if (themeToggle) {
+    themeToggle.dataset.themeMode = storedTheme;
+    themeToggle.setAttribute("aria-label", `Choose color theme. Current theme: ${storedTheme}.`);
+    themeToggle.setAttribute("title", `Theme: ${storedTheme}`);
+  }
+
+  if (themeToggleLabel) {
+    themeToggleLabel.textContent = storedTheme[0].toUpperCase() + storedTheme.slice(1);
+  }
+
+  if (themeToggleIcon) {
+    themeToggleIcon.dataset.themeToggleIcon = storedTheme;
+  }
+
+  themeChoices.forEach((choice) => {
+    const isActive = choice.dataset.themeChoice === storedTheme;
+    choice.setAttribute("aria-checked", String(isActive));
+  });
+};
+
+const closeThemeMenu = () => {
+  if (!themeMenu || !themeToggle) return;
+  themeMenu.hidden = true;
+  themeToggle.setAttribute("aria-expanded", "false");
+};
+
+const openThemeMenu = () => {
+  if (!themeMenu || !themeToggle) return;
+  themeMenu.hidden = false;
+  themeToggle.setAttribute("aria-expanded", "true");
+};
+
+const setThemeMode = (theme) => {
+  if (!themeModes.includes(theme)) return;
+
+  try {
+    localStorage.setItem(themeStorageKey, theme);
+  } catch {
+  }
+
+  applyTheme();
+  closeThemeMenu();
+  void highlightNushellBlocks();
+};
+
+if (themeToggle && themeMenu) {
+  themeToggle.addEventListener("click", () => {
+    if (themeMenu.hidden) {
+      openThemeMenu();
+    } else {
+      closeThemeMenu();
+    }
+  });
+
+  themeChoices.forEach((choice) => {
+    choice.addEventListener("click", () => {
+      setThemeMode(choice.dataset.themeChoice);
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Node && !themePicker?.contains(target)) {
+      closeThemeMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeThemeMenu();
+      themeToggle.focus();
+    }
+  });
+}
+
+const handleSystemThemeChange = () => {
+  if (getStoredTheme() !== "system") return;
+  applyTheme();
+  void highlightNushellBlocks();
+};
+
+if (typeof systemTheme.addEventListener === "function") {
+  systemTheme.addEventListener("change", handleSystemThemeChange);
+} else if (typeof systemTheme.addListener === "function") {
+  systemTheme.addListener(handleSystemThemeChange);
+}
+
+applyTheme();
 
 if (toggle && nav) {
   toggle.addEventListener("click", () => {
@@ -898,22 +1214,23 @@ if (sections.length > 0) {
 }
 
 const highlightNushellBlocks = async () => {
+  const runId = ++highlightRunId;
   const blocks = Array.from(document.querySelectorAll(SHIKI_SELECTOR));
   if (blocks.length === 0) return;
+  const theme = SHIKI_THEMES[getEffectiveTheme()];
 
   await Promise.all(
     blocks.map(async (block) => {
-      if (block.dataset.shikiRendered === "true") return;
-
       const source = block.querySelector('code[data-shiki-source="nushell"]');
-      if (!source) return;
+      const code = block.dataset.shikiRaw ?? source?.textContent ?? "";
+      if (code === "") return;
+      if (block.dataset.shikiRendered === "true" && block.dataset.shikiTheme === theme) return;
 
-      const code = source.textContent ?? "";
       let html;
       try {
         html = await codeToHtml(code, {
           lang: "nushell",
-          theme: SHIKI_THEME,
+          theme,
         });
       } catch (error) {
         console.error(`Failed to highlight Nushell block with Shiki ${SHIKI_VERSION}`, error);
@@ -924,9 +1241,13 @@ const highlightNushellBlocks = async () => {
       template.innerHTML = html.trim();
       const pre = template.content.querySelector("pre");
       if (!pre) return;
+      if (runId !== highlightRunId) return;
 
+      pre.dataset.shikiLang = "nushell";
+      pre.dataset.shikiRaw = code;
+      pre.dataset.shikiRendered = "true";
+      pre.dataset.shikiTheme = theme;
       block.replaceWith(pre);
-      block.dataset.shikiRendered = "true";
     })
   );
 };
