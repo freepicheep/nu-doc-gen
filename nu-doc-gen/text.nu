@@ -24,6 +24,14 @@ export def html-escape [value: string] {
     | str replace --all '"' '&quot;'
 }
 
+export def count-label [count: int singular: string plural: string] {
+    if $count == 1 {
+        $"($count) ($singular)"
+    } else {
+        $"($count) ($plural)"
+    }
+}
+
 export def split-paragraphs [text: string] {
     let reduced = (
         $text

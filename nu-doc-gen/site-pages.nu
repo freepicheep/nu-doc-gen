@@ -1,4 +1,4 @@
-use text.nu [html-escape]
+use text.nu [count-label html-escape]
 use help-doc.nu [render-command-html]
 
 export def render-site-shell [
@@ -194,10 +194,12 @@ export def render-index-page [model: record] {
             }
             let exported_count = ($category.commands | where is_exported == true | length)
             let internal_count = ($category.commands | where is_exported == false | length)
+            let exported_label = (count-label $exported_count 'exported command' 'exported commands')
+            let internal_label = (count-label $internal_count 'internal command' 'internal commands')
             let meta = if $internal_count == 0 {
-                $"($exported_count) exported commands"
+                $exported_label
             } else {
-                $"($exported_count) exported, ($internal_count) internal"
+                $"($exported_label), ($internal_label)"
             }
             $"<article class=\"overview-item\">
   <h2>(html-escape $category.title)</h2>
@@ -216,10 +218,10 @@ export def render-index-page [model: record] {
     }
 
     let strip = [
-        $"<span class=\"summary-pill\">($model.total_commands) total commands</span>"
-        $"<span class=\"summary-pill\">($model.exported_commands | length) exported commands</span>"
-        $"<span class=\"summary-pill\">($model.internal_commands) internal commands</span>"
-        $"<span class=\"summary-pill\">($model.categories | length) categories</span>"
+        $"<span class=\"summary-pill\">(count-label $model.total_commands 'total command' 'total commands')</span>"
+        $"<span class=\"summary-pill\">(count-label ($model.exported_commands | length) 'exported command' 'exported commands')</span>"
+        $"<span class=\"summary-pill\">(count-label $model.internal_commands 'internal command' 'internal commands')</span>"
+        $"<span class=\"summary-pill\">(count-label ($model.categories | length) 'category' 'categories')</span>"
         $"<span class=\"summary-pill\">Source mode: (if $model.source_mode { 'multi-file' } else { 'single-file' })</span>"
     ] | str join "\n"
 
@@ -241,8 +243,8 @@ export def render-category-page [model: record, category: record] {
     let internal_count = ($category.commands | where is_exported == false | length)
     let strip = [
         $"<span class=\"summary-pill\">File: <code>(html-escape ($category.file | path basename))</code></span>"
-        $"<span class=\"summary-pill\">($exported_count) exported commands</span>"
-        $"<span class=\"summary-pill\">($internal_count) internal commands</span>"
+        $"<span class=\"summary-pill\">(count-label $exported_count 'exported command' 'exported commands')</span>"
+        $"<span class=\"summary-pill\">(count-label $internal_count 'internal command' 'internal commands')</span>"
     ] | str join "\n"
 
     let sections = if (($category.commands | length) == 0) {
