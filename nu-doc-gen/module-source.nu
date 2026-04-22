@@ -1,6 +1,8 @@
 use text.nu [ quote-nu-string slugify first-paragraph strip-comment-prefix ]
 use help-doc.nu [ parse-help-doc ]
 
+const nu_doc_gen_dir = ((path self) | path dirname)
+
 export def extract-file-summary [file_path: string] {
     let lines = (open --raw $file_path | lines)
     let summary_lines = (
@@ -122,6 +124,10 @@ export def package-version [module_dir: string] {
     }
 }
 
+export def nu-doc-gen-version [] {
+    package-version $nu_doc_gen_dir
+}
+
 export def collect-file-commands [file_path: string] {
     let file_literal = (quote-nu-string ($file_path | path expand))
     let before_stdout = (run-nu-script 'scope commands | where type == custom | select name | get name | to nuon' | str trim)
@@ -219,6 +225,7 @@ export def collect-module-doc-model [module_path: string] {
         exported_commands: $exported_commands
         internal_commands: ($categories | get commands | flatten | where is_exported == false | length)
         package_version: (package-version $module_dir)
+        nu_doc_gen_version: (nu-doc-gen-version)
         source_mode: (($files | length) > 1)
     }
 }

@@ -6,7 +6,8 @@ export def render-site-shell [
     site_summary: string
     page_title: string
     page_lead: string
-    asset_version: string
+    site_version: string
+    css_version: string
     nav_html: string
     search_index_json: string
     body_html: string
@@ -14,15 +15,15 @@ export def render-site-shell [
     let summary_html = if (($site_summary | str trim) == '') { '' } else { $"<p class=\"site-summary\">(html-escape $site_summary)</p>" }
     let lead_html = if (($page_lead | str trim) == '') { '' } else { $"<p class=\"page-lead\">(html-escape $page_lead)</p>" }
     let title_html = (html-escape $page_title)
-    let version_html = if (($asset_version | str trim) == '') {
+    let version_html = if (($site_version | str trim) == '') {
         ''
     } else {
-        $"<span class=\"site-version\">v(html-escape $asset_version)</span>"
+        $"<span class=\"site-version\">v(html-escape $site_version)</span>"
     }
-    let css_href = if (($asset_version | str trim) == '') {
+    let css_href = if (($css_version | str trim) == '') {
         'assets/site.css'
     } else {
-        $"assets/site.css?v=(html-escape $asset_version)"
+        $"assets/site.css?v=(html-escape $css_version)"
     }
     let theme_bootstrap = '<script>
     (() => {
@@ -227,7 +228,7 @@ export def render-index-page [model: record] {
 ($overview_items)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') (render-nav-html $model) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') (render-nav-html $model) (render-search-index-json $model) $body
 }
 
 export def render-category-page [model: record, category: record] {
@@ -257,5 +258,5 @@ export def render-category-page [model: record, category: record] {
 ($sections)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') (render-nav-html $model $category.slug) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') (render-nav-html $model $category.slug) (render-search-index-json $model) $body
 }
