@@ -29,11 +29,8 @@ jobs:
       - name: Add Quiver to PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Install nu-doc-gen
-        run: qv add freepicheep/nu-doc-gen
-
       - name: Build documentation site
-        run: qv run nu -c 'use nu-doc-gen *; generate-doc-site nu-doc-gen/ site/'
+        run: qvx freepicheep/nu-doc-gen generate-doc-site "${{ github.event.repository.name }}/" site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
