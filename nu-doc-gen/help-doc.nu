@@ -291,6 +291,11 @@ export def render-command-html [doc: record] {
     } else {
         $"<div class=\"command-description\">(render-paragraphs-html $doc.description)</div>"
     }
+    let export_badge = if ($doc.is_exported? | default true) {
+        ''
+    } else {
+        '<span class="command-badge command-badge-internal">Internal</span>'
+    }
 
     let sections = (
         $doc.sections
@@ -299,7 +304,7 @@ export def render-command-html [doc: record] {
         | str join "\n"
     )
 
-    $"<article class=\"command-section\" id=\"($doc.slug)\"><h2><code>(html-escape $doc.name)</code></h2>
+    $"<article class=\"command-section\" id=\"($doc.slug)\"><div class=\"command-heading\"><h2><code>(html-escape $doc.name)</code></h2>($export_badge)</div>
 ($description)
 ($sections)
 </article>"

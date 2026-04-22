@@ -137,6 +137,14 @@ a:hover {
     line-height: 1.2;
 }
 
+.site-version {
+    margin-left: 0.5rem;
+    color: var(--muted);
+    font-size: 0.78em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .site-summary {
     margin: 0.65rem 0 0;
     color: var(--muted);
@@ -390,6 +398,33 @@ a:hover {
     margin: 0;
     font-size: 1.28rem;
     line-height: 1.2;
+}
+
+.command-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+}
+
+.command-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.55rem;
+    padding: 0.22rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-muted);
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.command-badge-internal {
+    background: var(--surface-strong);
 }
 
 .overview-meta,

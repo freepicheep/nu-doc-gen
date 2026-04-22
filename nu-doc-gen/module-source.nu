@@ -100,6 +100,28 @@ export def module-files [module_dir: string] {
     }
 }
 
+export def package-version [module_dir: string] {
+    let expanded_dir = ($module_dir | path expand)
+    let candidates = [
+        ([$expanded_dir 'nupackage.toml'] | path join)
+        ([$expanded_dir '..' 'nupackage.toml'] | path join | path expand)
+    ]
+    let package_file = (
+        $candidates
+        | where {|file_path| $file_path | path exists }
+        | first
+        | default ''
+    )
+
+    if $package_file == '' {
+        ''
+    } else {
+        open $package_file
+        | get -o package.version
+        | default ''
+    }
+}
+
 export def collect-file-commands [file_path: string] {
     let file_literal = (quote-nu-string ($file_path | path expand))
     let before_stdout = (run-nu-script 'scope commands | where type == custom | select name | get name | to nuon' | str trim)
@@ -111,6 +133,21 @@ export def collect-file-commands [file_path: string] {
         let before_names = if $before_stdout == '' { [] } else { $before_stdout | from nuon }
         let after_names = ($after_stdout | from nuon)
         $after_names | where {|command_name| $command_name not-in $before_names }
+    }
+}
+
+export def collect-module-exported-commands [mod_file: string] {
+    let expanded_file = ($mod_file | path expand)
+    let file_literal = (quote-nu-string $expanded_file)
+    let exported_stdout = (
+        run-nu-script $'use ($file_literal) *; scope modules | where file == ($file_literal) | get commands | flatten | get name | to nuon'
+        | str trim
+    )
+
+    if $exported_stdout == '' {
+        []
+    } else {
+        $exported_stdout | from nuon
     }
 }
 
@@ -143,6 +180,7 @@ export def collect-module-doc-model [module_path: string] {
     let mod_file = ([$module_dir 'mod.nu'] | path join)
     let module_name = ($module_dir | path basename)
     let files = (module-files $module_dir)
+    let exported_commands = (collect-module-exported-commands $mod_file)
 
     let categories = (
         $files
@@ -158,7 +196,13 @@ export def collect-module-doc-model [module_path: string] {
                     file: $file_path
                     description: (collect-file-description $file_path)
                     summary: (extract-file-summary $file_path)
-                    commands: ($commands | each {|command_name| collect-command-doc $file_path $command_name })
+                    commands: (
+                        $commands
+                        | each {|command_name|
+                            collect-command-doc $file_path $command_name
+                            | merge {is_exported: ($command_name in $exported_commands)}
+                        }
+                    )
                 }
             }
         }
@@ -172,6 +216,9 @@ export def collect-module-doc-model [module_path: string] {
         summary_short: (first-paragraph (extract-file-summary $mod_file))
         categories: $categories
         total_commands: ($categories | get commands | flatten | length)
+        exported_commands: $exported_commands
+        internal_commands: ($categories | get commands | flatten | where is_exported == false | length)
+        package_version: (package-version $module_dir)
         source_mode: (($files | length) > 1)
     }
 }

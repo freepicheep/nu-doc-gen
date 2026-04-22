@@ -6,6 +6,7 @@ export def render-site-shell [
     site_summary: string
     page_title: string
     page_lead: string
+    asset_version: string
     nav_html: string
     search_index_json: string
     body_html: string
@@ -13,6 +14,16 @@ export def render-site-shell [
     let summary_html = if (($site_summary | str trim) == '') { '' } else { $"<p class=\"site-summary\">(html-escape $site_summary)</p>" }
     let lead_html = if (($page_lead | str trim) == '') { '' } else { $"<p class=\"page-lead\">(html-escape $page_lead)</p>" }
     let title_html = (html-escape $page_title)
+    let version_html = if (($asset_version | str trim) == '') {
+        ''
+    } else {
+        $"<span class=\"site-version\">v(html-escape $asset_version)</span>"
+    }
+    let css_href = if (($asset_version | str trim) == '') {
+        'assets/site.css'
+    } else {
+        $"assets/site.css?v=(html-escape $asset_version)"
+    }
     let theme_bootstrap = '<script>
     (() => {
       try {
@@ -33,14 +44,14 @@ export def render-site-shell [
   <title>($title_html)</title>
   <meta name=\"description\" content=\"(html-escape $page_lead)\">
   ($theme_bootstrap)
-  <link rel=\"stylesheet\" href=\"assets/site.css\">
+  <link rel=\"stylesheet\" href=\"($css_href)\">
 </head>
 <body>
   <div class=\"layout\">
     <aside class=\"sidebar\">
       <div class=\"sidebar-header\">
         <p class=\"eyebrow\">Nu Module Docs</p>
-        <h1 class=\"site-title\">(html-escape $site_title)</h1>
+        <h1 class=\"site-title\">(html-escape $site_title)($version_html)</h1>
         ($summary_html)
       </div>
       <button class=\"sidebar-toggle\" data-nav-toggle>Sections</button>
@@ -180,9 +191,16 @@ export def render-index-page [model: record] {
             } else {
                 $"<p class=\"overview-desc\">(html-escape $category.description)</p>"
             }
+            let exported_count = ($category.commands | where is_exported == true | length)
+            let internal_count = ($category.commands | where is_exported == false | length)
+            let meta = if $internal_count == 0 {
+                $"($exported_count) exported commands"
+            } else {
+                $"($exported_count) exported, ($internal_count) internal"
+            }
             $"<article class=\"overview-item\">
   <h2>(html-escape $category.title)</h2>
-  <p class=\"overview-meta\">($category.commands | length) commands</p>
+  <p class=\"overview-meta\">($meta)</p>
   ($desc)
   <a class=\"overview-link\" href=\"($category.slug).html\">Open category</a>
 </article>"
@@ -198,6 +216,8 @@ export def render-index-page [model: record] {
 
     let strip = [
         $"<span class=\"summary-pill\">($model.total_commands) total commands</span>"
+        $"<span class=\"summary-pill\">($model.exported_commands | length) exported commands</span>"
+        $"<span class=\"summary-pill\">($model.internal_commands) internal commands</span>"
         $"<span class=\"summary-pill\">($model.categories | length) categories</span>"
         $"<span class=\"summary-pill\">Source mode: (if $model.source_mode { 'multi-file' } else { 'single-file' })</span>"
     ] | str join "\n"
@@ -207,7 +227,7 @@ export def render-index-page [model: record] {
 ($overview_items)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $model.name $lead (render-nav-html $model) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') (render-nav-html $model) (render-search-index-json $model) $body
 }
 
 export def render-category-page [model: record, category: record] {
@@ -216,9 +236,12 @@ export def render-category-page [model: record, category: record] {
     } else {
         $category.summary
     }
+    let exported_count = ($category.commands | where is_exported == true | length)
+    let internal_count = ($category.commands | where is_exported == false | length)
     let strip = [
         $"<span class=\"summary-pill\">File: <code>(html-escape ($category.file | path basename))</code></span>"
-        $"<span class=\"summary-pill\">($category.commands | length) commands</span>"
+        $"<span class=\"summary-pill\">($exported_count) exported commands</span>"
+        $"<span class=\"summary-pill\">($internal_count) internal commands</span>"
     ] | str join "\n"
 
     let sections = if (($category.commands | length) == 0) {
@@ -234,5 +257,5 @@ export def render-category-page [model: record, category: record] {
 ($sections)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $category.title $lead (render-nav-html $model $category.slug) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') (render-nav-html $model $category.slug) (render-search-index-json $model) $body
 }
