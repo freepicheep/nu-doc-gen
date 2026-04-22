@@ -1,6 +1,6 @@
 [package]
 name = "nu-doc-gen"
-version = "0.3.1"
+version = "0.3.2"
 description = "Turns your Nu module into a nice static documentation site"
 license = "MIT"
 authors = ["Friedrich Stoltzfus"]
