@@ -1,4 +1,4 @@
-# Shared string and text rendering helpers.
+# Shared string, escaping, and paragraph-formatting helpers for documentation rendering.
 
 export def quote-nu-string [value: string] {
     let escaped = (

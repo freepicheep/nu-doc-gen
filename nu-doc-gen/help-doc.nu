@@ -1,3 +1,5 @@
+# Parsers and renderers for turning Nushell help output into structured markdown and HTML documentation.
+
 use text.nu *
 
 export def parse-definition-items [lines: list<string>] {
@@ -42,23 +44,24 @@ export def render-definition-list-html [items: list<record<name: string, descrip
         | str join "\n"
     )
 
-    $"<dl class=\"def-list\">
-($rendered)
+    $"<dl class=\"def-list\">($rendered)
 </dl>"
 }
 
 export def parse-examples [lines: list<string>] {
     $lines
-    | reduce --fold {pairs: [] pending_desc: ''} {|line, acc|
+    | reduce --fold {pairs: [] pending_desc: ''} {|line acc|
         let trimmed = ($line | str trim)
         if $trimmed == '' {
             $acc
         } else if ($trimmed | str starts-with '>') {
             {
-                pairs: ($acc.pairs | append {
-                    description: $acc.pending_desc
-                    code: ($trimmed | str replace --regex '^>\s*' '')
-                })
+                pairs: (
+                    $acc.pairs | append {
+                        description: $acc.pending_desc
+                        code: ($trimmed | str replace --regex '^>\s*' '')
+                    }
+                )
                 pending_desc: ''
             }
         } else {
@@ -147,8 +150,7 @@ export def render-io-table-html [table: record<header: list<string>, rows: list<
             | str join "\n"
         )
 
-        $"<table class=\"io-table\"><thead><tr>($head)</tr></thead><tbody>
-($rows)
+        $"<table class=\"io-table\"><thead><tr>($head)</tr></thead><tbody>($rows)
 </tbody></table>"
     }
 }
@@ -172,7 +174,7 @@ export def parse-help-doc [command_name: string] {
     let sections = (
         $lines
         | skip $first_header_idx
-        | reduce --fold [] {|line, acc|
+        | reduce --fold [] {|line acc|
             let trimmed = ($line | str trim)
             if ($trimmed | str ends-with ':') and ($trimmed != '') and not ($line | str starts-with ' ') and not ($line | str starts-with '>') {
                 $acc | append {header: ($trimmed | str replace ':' '') lines: []}
@@ -279,8 +281,7 @@ export def render-section-html [section: record] {
     if (($body | str trim) == '') {
         ''
     } else {
-        $"<section class=\"doc-section\"><h3>(html-escape $section.header)</h3>
-($body)
+        $"<section class=\"doc-section\"><h3>(html-escape $section.header)</h3>($body)
 </section>"
     }
 }
@@ -304,8 +305,6 @@ export def render-command-html [doc: record] {
         | str join "\n"
     )
 
-    $"<article class=\"command-section\" id=\"($doc.slug)\"><div class=\"command-heading\"><h2><code>(html-escape $doc.name)</code></h2>($export_badge)</div>
-($description)
-($sections)
+    $"<article class=\"command-section\" id=\"($doc.slug)\"><div class=\"command-heading\"><h2><code>(html-escape $doc.name)</code></h2>($export_badge)</div>($description)($sections)
 </article>"
 }

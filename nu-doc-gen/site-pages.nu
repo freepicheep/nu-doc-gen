@@ -1,5 +1,7 @@
-use text.nu [count-label html-escape]
-use help-doc.nu [render-command-html]
+# HTML page builders for the generated documentation site, including navigation and search metadata.
+
+use text.nu [ count-label html-escape ]
+use help-doc.nu [ render-command-html ]
 
 export def render-site-shell [
     site_title: string
@@ -139,7 +141,7 @@ export def render-search-index-json [model: record] {
     | str replace --all '</' '<\/'
 }
 
-export def render-nav-html [model: record, current_slug?: string] {
+export def render-nav-html [model: record current_slug?: string] {
     let overview_active = if ($current_slug | default '') == '' { ' is-active' } else { '' }
     let category_links = (
         $model.categories
@@ -176,8 +178,7 @@ export def render-nav-html [model: record, current_slug?: string] {
   <li><a class=\"nav-link($overview_active)\" href=\"index.html\">Introduction</a></li>
 </ul>
 <p class=\"nav-group-title\">Categories</p>
-<ul class=\"nav-list\">
-($category_links)
+<ul class=\"nav-list\">($category_links)
 </ul>"
 }
 
@@ -226,14 +227,13 @@ export def render-index-page [model: record] {
     ] | str join "\n"
 
     let body = $"<div class=\"summary-strip\">($strip)</div>
-<section class=\"overview-list\">
-($overview_items)
+<section class=\"overview-list\">($overview_items)
 </section>"
 
     render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') (render-nav-html $model) (render-search-index-json $model) $body
 }
 
-export def render-category-page [model: record, category: record] {
+export def render-category-page [model: record category: record] {
     let lead = if (($category.summary | str trim) == '') {
         $'Commands exported from ($category.file | path basename).'
     } else {
@@ -256,8 +256,7 @@ export def render-category-page [model: record, category: record] {
     }
 
     let body = $"<div class=\"summary-strip\">($strip)</div>
-<section class=\"command-stack\">
-($sections)
+<section class=\"command-stack\">($sections)
 </section>"
 
     render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') (render-nav-html $model $category.slug) (render-search-index-json $model) $body

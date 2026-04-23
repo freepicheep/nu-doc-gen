@@ -1,3 +1,5 @@
+# Bundled CSS and JavaScript assets for the generated static documentation site.
+
 export def site-css [] {
 '
 :root {

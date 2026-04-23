@@ -1,3 +1,5 @@
+# Source inspection and runtime metadata helpers for building a documentation model from Nushell modules.
+
 use text.nu [ quote-nu-string slugify first-paragraph strip-comment-prefix ]
 use help-doc.nu [ parse-help-doc ]
 

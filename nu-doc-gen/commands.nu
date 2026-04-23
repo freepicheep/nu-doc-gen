@@ -1,3 +1,5 @@
+# Exported commands for generating module docs, source-based docs, static doc sites, and pager views.
+
 use help-doc.nu [parse-help-doc render-command-markdown]
 use module-source.nu [collect-module-doc-model]
 use site-assets.nu [site-css site-js]
