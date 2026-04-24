@@ -61,7 +61,7 @@ jobs:
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Build documentation site
-        run: qvx freepicheep/nu-doc-gen generate-doc-site "${{ github.event.repository.name }}/" site/
+        run: qvx freepicheep/nu-doc-gen generate-doc-site "${{ github.event.repository.name }}/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
