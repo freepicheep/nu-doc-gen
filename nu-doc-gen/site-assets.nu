@@ -4,75 +4,10 @@ export def site-css [] {
 '
 :root {
     color-scheme: light dark;
-    --bg: #f7f4ef;
-    --bg-start: #fbf8f2;
-    --bg-end: #f4efe6;
-    --surface: #fffdf9;
-    --surface-alpha: rgba(255, 253, 249, 0.8);
-    --sidebar-bg: rgba(255, 253, 249, 0.94);
-    --surface-strong: #f0e6d9;
-    --surface-muted: #ebe4d7;
-    --text: #1e241e;
-    --muted: #5f675d;
-    --border: #d6cbbd;
-    --accent: #117a65;
-    --accent-strong: #0a5e4d;
-    --accent-soft: #d9f0ea;
-    --code-bg: #1f2520;
-    --code-text: #f5f3ed;
-    --shadow: 0 16px 40px rgba(63, 39, 8, 0.08);
     --radius: 8px;
     --sidebar-width: 320px;
     --content-width: 920px;
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-[data-theme="light"] {
-    color-scheme: light;
-}
-
-[data-theme="dark"] {
-    color-scheme: dark;
-    --bg: #191724;
-    --bg-start: #1f1d2e;
-    --bg-end: #191724;
-    --surface: #1f1d2e;
-    --surface-alpha: rgba(31, 29, 46, 0.88);
-    --sidebar-bg: rgba(25, 23, 36, 0.94);
-    --surface-strong: #26233a;
-    --surface-muted: #2a273f;
-    --text: #e0def4;
-    --muted: #908caa;
-    --border: #403d52;
-    --accent: #9ccfd8;
-    --accent-strong: #c4a7e7;
-    --accent-soft: #26233a;
-    --code-bg: #191724;
-    --code-text: #e0def4;
-    --shadow: 0 18px 42px rgba(6, 5, 10, 0.42);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        color-scheme: dark;
-        --bg: #191724;
-        --bg-start: #1f1d2e;
-        --bg-end: #191724;
-        --surface: #1f1d2e;
-        --surface-alpha: rgba(31, 29, 46, 0.88);
-        --sidebar-bg: rgba(25, 23, 36, 0.94);
-        --surface-strong: #26233a;
-        --surface-muted: #2a273f;
-        --text: #e0def4;
-        --muted: #908caa;
-        --border: #403d52;
-        --accent: #9ccfd8;
-        --accent-strong: #c4a7e7;
-        --accent-soft: #26233a;
-        --code-bg: #191724;
-        --code-text: #e0def4;
-        --shadow: 0 18px 42px rgba(6, 5, 10, 0.42);
-    }
 }
 
 * {
@@ -525,6 +460,35 @@ pre[data-shiki-lang] {
     display: grid;
 }
 
+.shiki,
+.shiki span {
+    background-color: var(--shiki-light-bg) !important;
+    color: var(--shiki-light) !important;
+    font-style: var(--shiki-light-font-style) !important;
+    font-weight: var(--shiki-light-font-weight) !important;
+    text-decoration: var(--shiki-light-text-decoration) !important;
+}
+
+[data-theme="dark"] .shiki,
+[data-theme="dark"] .shiki span {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .shiki,
+    :root:not([data-theme="light"]) .shiki span {
+        background-color: var(--shiki-dark-bg) !important;
+        color: var(--shiki-dark) !important;
+        font-style: var(--shiki-dark-font-style) !important;
+        font-weight: var(--shiki-dark-font-weight) !important;
+        text-decoration: var(--shiki-dark-text-decoration) !important;
+    }
+}
+
 .shiki .line {
     min-height: 1.5rem;
 }
@@ -607,7 +571,7 @@ code {
 }
 
 .io-table tbody tr:nth-child(even) {
-    background: rgba(17, 122, 101, 0.03);
+    background: var(--table-stripe);
 }
 
 .example-block + .example-block {
@@ -865,9 +829,17 @@ import { codeToHtml } from "https://esm.sh/shiki@4.0.2";
 
 const SHIKI_VERSION = "4.0.2";
 const SHIKI_SELECTOR = 'pre[data-shiki-lang="nushell"]';
+const themeConfigNode = document.getElementById("theme-config");
+const themeConfig = (() => {
+  try {
+    return JSON.parse(themeConfigNode?.textContent || "{}");
+  } catch {
+    return {};
+  }
+})();
 const SHIKI_THEMES = {
-  light: "rose-pine-dawn",
-  dark: "rose-pine",
+  light: themeConfig.shiki?.light || "rose-pine-dawn",
+  dark: themeConfig.shiki?.dark || "rose-pine",
 };
 const toggle = document.querySelector("[data-nav-toggle]");
 const themePicker = document.querySelector("[data-theme-picker]");
@@ -886,7 +858,6 @@ const sidebarScrollKey = "nu-doc-gen.sidebar-scroll-top";
 const themeStorageKey = "nu-doc-gen.theme";
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
 const themeModes = ["system", "light", "dark"];
-let highlightRunId = 0;
 const sections = commandLinks
   .map((link) => {
     const hash = link.getAttribute("href")?.split("#")[1];
@@ -904,12 +875,6 @@ const getStoredTheme = () => {
   } catch {
     return "system";
   }
-};
-
-const getEffectiveTheme = () => {
-  const storedTheme = getStoredTheme();
-  if (storedTheme === "light" || storedTheme === "dark") return storedTheme;
-  return systemTheme.matches ? "dark" : "light";
 };
 
 const applyTheme = () => {
@@ -963,7 +928,6 @@ const setThemeMode = (theme) => {
 
   applyTheme();
   closeThemeMenu();
-  void highlightNushellBlocks();
 };
 
 if (themeToggle && themeMenu) {
@@ -999,7 +963,6 @@ if (themeToggle && themeMenu) {
 const handleSystemThemeChange = () => {
   if (getStoredTheme() !== "system") return;
   applyTheme();
-  void highlightNushellBlocks();
 };
 
 if (typeof systemTheme.addEventListener === "function") {
@@ -1251,23 +1214,26 @@ if (sections.length > 0) {
 }
 
 const highlightNushellBlocks = async () => {
-  const runId = ++highlightRunId;
   const blocks = Array.from(document.querySelectorAll(SHIKI_SELECTOR));
   if (blocks.length === 0) return;
-  const theme = SHIKI_THEMES[getEffectiveTheme()];
 
   await Promise.all(
     blocks.map(async (block) => {
       const source = block.querySelector('code[data-shiki-source="nushell"]');
       const code = block.dataset.shikiRaw ?? source?.textContent ?? "";
       if (code === "") return;
-      if (block.dataset.shikiRendered === "true" && block.dataset.shikiTheme === theme) return;
+      if (
+        block.dataset.shikiRendered === "true"
+        && block.dataset.shikiThemeLight === SHIKI_THEMES.light
+        && block.dataset.shikiThemeDark === SHIKI_THEMES.dark
+      ) return;
 
       let html;
       try {
         html = await codeToHtml(code, {
           lang: "nushell",
-          theme,
+          themes: SHIKI_THEMES,
+          defaultColor: false,
         });
       } catch (error) {
         console.error(`Failed to highlight Nushell block with Shiki ${SHIKI_VERSION}`, error);
@@ -1278,12 +1244,12 @@ const highlightNushellBlocks = async () => {
       template.innerHTML = html.trim();
       const pre = template.content.querySelector("pre");
       if (!pre) return;
-      if (runId !== highlightRunId) return;
 
       pre.dataset.shikiLang = "nushell";
       pre.dataset.shikiRaw = code;
       pre.dataset.shikiRendered = "true";
-      pre.dataset.shikiTheme = theme;
+      pre.dataset.shikiThemeLight = SHIKI_THEMES.light;
+      pre.dataset.shikiThemeDark = SHIKI_THEMES.dark;
       block.replaceWith(pre);
     })
   );

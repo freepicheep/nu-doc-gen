@@ -4,6 +4,7 @@ use help-doc.nu [parse-help-doc render-command-markdown]
 use module-source.nu [collect-module-doc-model]
 use site-assets.nu [site-css site-js]
 use site-pages.nu [render-index-page render-category-page]
+use site-theme.nu [resolve-site-theme-pair site-theme-css site-theme-config-json]
 
 const vendored_fuse_asset = ([((path self) | path dirname) 'vendor' 'fuse.min.js'] | path join)
 
@@ -74,8 +75,12 @@ export def generate-source-docs [
 export def generate-doc-site [
     module_path: string = '.' # module directory or mod.nu path
     output_dir: string = 'site' # the directory to write the static site into
+    --light-theme: string = 'rose-pine-dawn' # bundled Shiki light theme name from themes.nuon
+    --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.nuon
 ] {
     let model = (collect-module-doc-model $module_path)
+    let theme_pair = (resolve-site-theme-pair $light_theme $dark_theme)
+    let theme_config_json = (site-theme-config-json $theme_pair)
     let site_dir = ($output_dir | path expand)
     let assets_dir = ([$site_dir 'assets'] | path join)
 
@@ -89,12 +94,13 @@ export def generate-doc-site [
     }
 
     (site-css) | save --force ([$assets_dir 'site.css'] | path join)
+    (site-theme-css $theme_pair) | save --force ([$assets_dir 'theme.css'] | path join)
     (site-js) | save --force ([$assets_dir 'site.js'] | path join)
     (open --raw $vendored_fuse_asset) | save --force ([$assets_dir 'fuse.min.js'] | path join)
-    (render-index-page $model) | save --force ([$site_dir 'index.html'] | path join)
+    (render-index-page $model $theme_config_json) | save --force ([$site_dir 'index.html'] | path join)
 
     $model.categories | each {|category|
-        (render-category-page $model $category) | save --force ([$site_dir $"($category.slug).html"] | path join)
+        (render-category-page $model $category $theme_config_json) | save --force ([$site_dir $"($category.slug).html"] | path join)
     }
 
     print $'Done! Static site written to: ($site_dir)'
