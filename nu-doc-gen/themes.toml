@@ -1,0 +1,214 @@
+[[themes]]
+ghostty = "Ayu Mirage"
+shiki = "ayu-mirage"
+mode = "dark"
+
+[[themes]]
+ghostty = "Ayu"
+shiki = "ayu-dark"
+mode = "dark"
+
+[[themes]]
+ghostty = "Andromeda"
+shiki = "andromeeda"
+mode = "dark"
+
+[[themes]]
+ghostty = "Catppuccin Frappe"
+shiki = "catppuccin-frappe"
+mode = "dark"
+
+[[themes]]
+ghostty = "Catppuccin Macchiato"
+shiki = "catppuccin-macchiato"
+mode = "dark"
+
+[[themes]]
+ghostty = "Catppuccin Mocha"
+shiki = "catppuccin-mocha"
+mode = "dark"
+
+[[themes]]
+ghostty = "Dark+"
+shiki = "dark-plus"
+mode = "dark"
+
+[[themes]]
+ghostty = "Dracula"
+shiki = "dracula"
+mode = "dark"
+
+[[themes]]
+ghostty = "Everforest Dark Hard"
+shiki = "everforest-dark"
+mode = "dark"
+
+[[themes]]
+ghostty = "GitHub Dark"
+shiki = "github-dark"
+mode = "dark"
+
+[[themes]]
+ghostty = "GitHub Dark Default"
+shiki = "github-dark-default"
+mode = "dark"
+
+[[themes]]
+ghostty = "GitHub Dark Dimmed"
+shiki = "github-dark-dimmed"
+mode = "dark"
+
+[[themes]]
+ghostty = "GitHub Dark High Contrast"
+shiki = "github-dark-high-contrast"
+mode = "dark"
+
+[[themes]]
+ghostty = "Gruvbox Dark Hard"
+shiki = "gruvbox-dark-hard"
+mode = "dark"
+
+[[themes]]
+ghostty = "Gruvbox Dark"
+shiki = "gruvbox-dark-medium"
+mode = "dark"
+
+[[themes]]
+ghostty = "Gruvbox Dark"
+shiki = "gruvbox-dark-soft"
+mode = "dark"
+
+[[themes]]
+ghostty = "Horizon"
+shiki = "horizon"
+mode = "dark"
+
+[[themes]]
+ghostty = "Kanagawa Dragon"
+shiki = "kanagawa-dragon"
+mode = "dark"
+
+[[themes]]
+ghostty = "Kanagawa Wave"
+shiki = "kanagawa-wave"
+mode = "dark"
+
+[[themes]]
+ghostty = "Material"
+shiki = "material-theme"
+mode = "dark"
+
+[[themes]]
+ghostty = "Material Darker"
+shiki = "material-theme-darker"
+mode = "dark"
+
+[[themes]]
+ghostty = "Material Ocean"
+shiki = "material-theme-ocean"
+mode = "dark"
+
+[[themes]]
+ghostty = "Night Owl"
+shiki = "night-owl"
+mode = "dark"
+
+[[themes]]
+ghostty = "Nord"
+shiki = "nord"
+mode = "dark"
+
+[[themes]]
+ghostty = "Poimandres"
+shiki = "poimandres"
+mode = "dark"
+
+[[themes]]
+ghostty = "Rose Pine"
+shiki = "rose-pine"
+mode = "dark"
+
+[[themes]]
+ghostty = "Rose Pine Moon"
+shiki = "rose-pine-moon"
+mode = "dark"
+
+[[themes]]
+ghostty = "Synthwave"
+shiki = "synthwave-84"
+mode = "dark"
+
+[[themes]]
+ghostty = "TokyoNight"
+shiki = "tokyo-night"
+mode = "dark"
+
+[[themes]]
+ghostty = "Vesper"
+shiki = "vesper"
+mode = "dark"
+
+[[themes]]
+ghostty = "Ayu Light"
+shiki = "ayu-light"
+mode = "light"
+
+[[themes]]
+ghostty = "Catppuccin Latte"
+shiki = "catppuccin-latte"
+mode = "light"
+
+[[themes]]
+ghostty = "Everforest Light Med"
+shiki = "everforest-light"
+mode = "light"
+
+[[themes]]
+ghostty = "GitHub"
+shiki = "github-light"
+mode = "light"
+
+[[themes]]
+ghostty = "GitHub Light Default"
+shiki = "github-light-default"
+mode = "light"
+
+[[themes]]
+ghostty = "GitHub Light High Contrast"
+shiki = "github-light-high-contrast"
+mode = "light"
+
+[[themes]]
+ghostty = "Gruvbox Light Hard"
+shiki = "gruvbox-light-hard"
+mode = "light"
+
+[[themes]]
+ghostty = "Gruvbox Light"
+shiki = "gruvbox-light-medium"
+mode = "light"
+
+[[themes]]
+ghostty = "Gruvbox Light"
+shiki = "gruvbox-light-soft"
+mode = "light"
+
+[[themes]]
+ghostty = "Horizon Bright"
+shiki = "horizon-bright"
+mode = "light"
+
+[[themes]]
+ghostty = "Kanagawa Lotus"
+shiki = "kanagawa-lotus"
+mode = "light"
+
+[[themes]]
+ghostty = "Night Owlish Light"
+shiki = "night-owl-light"
+mode = "light"
+
+[[themes]]
+ghostty = "Rose Pine Dawn"
+shiki = "rose-pine-dawn"
+mode = "light"

@@ -1,8 +1,8 @@
-# Theme registry loading, iTerm2 palette parsing, and generated CSS/JSON helpers for themed sites.
+# Theme registry loading, Ghostty palette parsing, and generated CSS/JSON helpers for themed sites.
 
 const nu_doc_gen_dir = ((path self) | path dirname)
-const bundled_iterm_dir = ([ $nu_doc_gen_dir 'vendor' 'iterm2' ] | path join)
-const theme_registry_file = ([ $nu_doc_gen_dir 'themes.nuon' ] | path join)
+const bundled_ghostty_dir = ([ $nu_doc_gen_dir 'vendor' 'themes' ] | path join)
+const theme_registry_file = ([ $nu_doc_gen_dir 'themes.toml' ] | path join)
 
 def clamp-unit [value: number] {
     if $value < 0 {
@@ -14,41 +14,89 @@ def clamp-unit [value: number] {
     }
 }
 
-def plist-node-to-value [node: record] {
-    match $node.tag {
-        'dict' => {
-            $node.content
-            | chunks 2
-            | reduce --fold {} {|pair, acc|
-                let key = ($pair | get 0.content.0.content)
-                let value = (plist-node-to-value ($pair | get 1))
-                $acc | upsert $key $value
-            }
-        }
-        'string' => { $node.content.0.content }
-        'real' => { $node.content.0.content | into float }
-        'integer' => { $node.content.0.content | into int }
-        'true' => { true }
-        'false' => { false }
-        _ => { null }
+def load-theme-registry [] {
+    open $theme_registry_file | get themes
+}
+
+def hex-channel [color: string start: int end: int] {
+    $color
+    | str trim
+    | str replace --regex '^#' ''
+    | str substring $start..$end
+    | into int --radix 16
+    | $in / 255
+}
+
+def hex-color-components [color: string] {
+    {
+        red: (hex-channel $color 0 1)
+        green: (hex-channel $color 2 3)
+        blue: (hex-channel $color 4 5)
     }
 }
 
-def load-theme-registry [] {
-    open $theme_registry_file
+def parse-ghostty-line [line: string] {
+    let parsed = (
+        $line
+        | parse --regex '^(?<key>[^=]+?)\s*=\s*(?<value>.+)$'
+    )
+
+    if (($parsed | length) == 0) {
+        null
+    } else {
+        let row = ($parsed | first)
+
+        {
+            key: ($row.key | str trim)
+            value: ($row.value | str trim)
+        }
+    }
 }
 
-def load-iterm-theme [iterm_name: string] {
-    let theme_file = ([ $bundled_iterm_dir $'($iterm_name).itermcolors' ] | path join)
+def load-ghostty-theme [ghostty_name: string] {
+    let theme_file = ([ $bundled_ghostty_dir $ghostty_name ] | path join)
 
     if not ($theme_file | path exists) {
         error make {
-            msg: $'Missing bundled iTerm theme ''($iterm_name)'' at ($theme_file).'
+            msg: $'Missing bundled Ghostty theme ''($ghostty_name)'' at ($theme_file).'
         }
     }
 
-    let xml = (open --raw $theme_file | from xml --allow-dtd)
-    plist-node-to-value ($xml.content | first)
+    let rows = (
+        open --raw $theme_file
+        | lines
+        | each { str trim }
+        | where {|line| $line != '' and not ($line | str starts-with '#') }
+        | each {|line| parse-ghostty-line $line }
+        | where {|row| $row != null }
+    )
+
+    let palette = (
+        $rows
+        | where key == 'palette'
+        | each {|row|
+            let parts = ($row.value | split row '=' | each { str trim })
+
+            {
+                name: $'ansi_(($parts | first) | into int)'
+                value: (hex-color-components ($parts | last))
+            }
+        }
+        | reduce --fold {} {|row, acc|
+            $acc | upsert $row.name $row.value
+        }
+    )
+
+    let colors = (
+        $rows
+        | where key != 'palette'
+        | reduce --fold {} {|row, acc|
+            let color_name = ($row.key | str replace --all '-' '_')
+            $acc | upsert $color_name (hex-color-components $row.value)
+        }
+    )
+
+    $colors | merge { palette: $palette }
 }
 
 def lookup-theme-entry [registry: list<record> theme_name: string mode: string] {
@@ -73,14 +121,6 @@ def lookup-theme-entry [registry: list<record> theme_name: string mode: string] 
     }
 
     $matches | first
-}
-
-def color-components [plist_color: record] {
-    {
-        red: ($plist_color.'Red Component' | default 0.0)
-        green: ($plist_color.'Green Component' | default 0.0)
-        blue: ($plist_color.'Blue Component' | default 0.0)
-    }
 }
 
 def mix-color [base: record other: record weight: number] {
@@ -124,12 +164,34 @@ def color-rgba [color: record alpha: number] {
     ['rgba(' $red ', ' $green ', ' $blue ', ' $alpha ')'] | str join
 }
 
-def theme-css-vars [mode: string iterm_theme: record] {
-    let background = (color-components $iterm_theme.'Background Color')
-    let foreground = (color-components $iterm_theme.'Foreground Color')
-    let dim = (color-components $iterm_theme.'Ansi 8 Color')
-    let accent = (color-components $iterm_theme.'Ansi 4 Color')
-    let accent_strong = (color-components $iterm_theme.'Ansi 5 Color')
+def required-color [theme: record name: string] {
+    if not ($name in ($theme | columns)) {
+        error make {
+            msg: $'Ghostty theme is missing required color ''($name)''.'
+        }
+    }
+
+    $theme | get $name
+}
+
+def required-palette-color [theme: record index: int] {
+    let name = $'ansi_($index)'
+
+    if not ($name in ($theme.palette | columns)) {
+        error make {
+            msg: $'Ghostty theme is missing required palette color ''($index)''.'
+        }
+    }
+
+    $theme.palette | get $name
+}
+
+def theme-css-vars [mode: string ghostty_theme: record] {
+    let background = (required-color $ghostty_theme background)
+    let foreground = (required-color $ghostty_theme foreground)
+    let dim = (required-palette-color $ghostty_theme 8)
+    let accent = (required-palette-color $ghostty_theme 4)
+    let accent_strong = (required-palette-color $ghostty_theme 5)
 
     let bg_start = if $mode == 'light' {
         lighten $background 0.03
@@ -206,11 +268,11 @@ def theme-css-vars [mode: string iterm_theme: record] {
 }
 
 def resolve-theme-details [theme_entry: record] {
-    let iterm_theme = (load-iterm-theme $theme_entry.iterm)
+    let ghostty_theme = (load-ghostty-theme $theme_entry.ghostty)
 
     $theme_entry
     | merge {
-        css: (theme-css-vars $theme_entry.mode $iterm_theme)
+        css: (theme-css-vars $theme_entry.mode $ghostty_theme)
     }
 }
 

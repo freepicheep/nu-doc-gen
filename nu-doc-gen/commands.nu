@@ -75,8 +75,8 @@ export def generate-source-docs [
 export def generate-doc-site [
     module_path: string = '.' # module directory or mod.nu path
     output_dir: string = 'site' # the directory to write the static site into
-    --light-theme: string = 'rose-pine-dawn' # bundled Shiki light theme name from themes.nuon
-    --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.nuon
+    --light-theme: string = 'rose-pine-dawn' # bundled Shiki light theme name from themes.toml
+    --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.toml
 ] {
     let model = (collect-module-doc-model $module_path)
     let theme_pair = (resolve-site-theme-pair $light_theme $dark_theme)
