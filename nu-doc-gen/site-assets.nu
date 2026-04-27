@@ -377,6 +377,17 @@ a:hover {
     color: var(--muted);
 }
 
+.overview-desc p,
+.overview-desc ol,
+.overview-desc ul {
+    margin: 0.6rem 0 0;
+}
+
+.overview-desc ol,
+.overview-desc ul {
+    padding-left: 1.35rem;
+}
+
 .overview-link {
     display: inline-flex;
     margin-top: 0.85rem;
@@ -404,6 +415,20 @@ a:hover {
     margin: 0.75rem 0 0;
     line-height: 1.7;
     overflow-wrap: anywhere;
+}
+
+.command-description ol,
+.command-description ul,
+.section-text ol,
+.section-text ul {
+    margin: 0.75rem 0 0;
+    padding-left: 1.35rem;
+    line-height: 1.7;
+}
+
+.command-description li,
+.section-text li {
+    margin: 0.2rem 0;
 }
 
 .doc-section {

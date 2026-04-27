@@ -69,6 +69,84 @@ export def render-paragraphs-html [text: string] {
     }
 }
 
+def close-doc-paragraph [] {
+    let acc = $in
+
+    if (($acc.paragraph_lines | length) == 0) {
+        $acc
+    } else {
+        let paragraph = ($acc.paragraph_lines | str join ' ')
+        {
+            blocks: ($acc.blocks | append $"<p>(html-escape $paragraph)</p>")
+            paragraph_lines: []
+            list_type: $acc.list_type
+            list_items: $acc.list_items
+        }
+    }
+}
+
+def close-doc-list [] {
+    let acc = $in
+
+    if ($acc.list_type == '') {
+        $acc
+    } else {
+        let items = (
+            $acc.list_items
+            | each {|item| $"<li>(html-escape $item)</li>" }
+            | str join ''
+        )
+        {
+            blocks: ($acc.blocks | append $"<($acc.list_type)>($items)</($acc.list_type)>")
+            paragraph_lines: $acc.paragraph_lines
+            list_type: ''
+            list_items: []
+        }
+    }
+}
+
+def close-doc-blocks [] {
+    $in | close-doc-paragraph | close-doc-list
+}
+
+def append-doc-list-item [acc: record list_type: string item: string] {
+    let without_paragraph = ($acc | close-doc-paragraph)
+    let ready = if ($without_paragraph.list_type == $list_type) {
+        $without_paragraph
+    } else {
+        $without_paragraph | close-doc-list | merge {list_type: $list_type}
+    }
+
+    $ready | merge {list_items: ($ready.list_items | append $item)}
+}
+
+def append-doc-paragraph-line [acc: record line: string] {
+    let without_list = ($acc | close-doc-list)
+    $without_list | merge {paragraph_lines: ($without_list.paragraph_lines | append $line)}
+}
+
+export def render-doc-text-html [text: string] {
+    let state = (
+        $text
+        | lines
+        | reduce --fold {blocks: [] paragraph_lines: [] list_type: '' list_items: []} {|line, acc|
+            let trimmed = ($line | str trim)
+            if ($trimmed == '') {
+                $acc | close-doc-blocks
+            } else if ($trimmed =~ '^\d+\.\s+') {
+                append-doc-list-item $acc ol ($trimmed | str replace --regex '^\d+\.\s+' '')
+            } else if ($trimmed =~ '^[*-]\s+') {
+                append-doc-list-item $acc ul ($trimmed | str replace --regex '^[*-]\s+' '')
+            } else {
+                append-doc-paragraph-line $acc $trimmed
+            }
+        }
+        | close-doc-blocks
+    )
+
+    $state.blocks | str join "\n"
+}
+
 export def first-paragraph [text: string] {
     split-paragraphs $text | first | default ''
 }

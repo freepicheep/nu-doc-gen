@@ -1,6 +1,6 @@
 # HTML page builders for the generated documentation site, including navigation and search metadata.
 
-use text.nu [ count-label html-escape ]
+use text.nu [ count-label html-escape render-doc-text-html ]
 use help-doc.nu [ render-command-html ]
 
 export def render-site-shell [
@@ -199,7 +199,7 @@ export def render-index-page [model: record theme_config_json: string] {
             let desc = if (($category.description | default '' | str trim) == '') {
                 '<p class="overview-desc">No module description available.</p>'
             } else {
-                $"<p class=\"overview-desc\">(html-escape $category.description)</p>"
+                $"<div class=\"overview-desc\">(render-doc-text-html $category.description)</div>"
             }
             let exported_count = ($category.commands | where is_exported == true | length)
             let internal_count = ($category.commands | where is_exported == false | length)
