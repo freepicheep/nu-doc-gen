@@ -1,28 +1,17 @@
 # nu-doc-gen
 
-This is a simple Nu module to generate markdown documentation and static sites for Nu modules.
+This is a simple Nu module to generate static site and markdown documentation for Nu modules.
 
-## Commands
+## Building a Static Site
 
-- `generate-module-docs <module_name> <output_file?>`
-  Generates markdown from a module that is already loaded in scope.
-- `generate-source-docs <module_path?> <output_file?>`
-  Loads `.nu` source files from a module repo, groups multi-file modules by file, and generates markdown.
-- `generate-doc-site <module_path?> <output_dir?> --light-theme <shiki_theme?> --dark-theme <shiki_theme?>`
-  Builds a static HTML/CSS/JS documentation site from a module repo. Each `.nu` file becomes a category when the module has more than just `mod.nu`. Light and dark site palettes come from the bundled `nu-doc-gen/themes.toml` registry, which maps supported Shiki themes to bundled Ghostty color schemes.
+Build a static HTML/CSS/JS documentation site from a module repo. Each `.nu` file becomes a category when the module has more than just `mod.nu`. Light and dark site palettes come from the bundled `nu-doc-gen/themes.toml` registry, which maps supported Shiki themes to bundled Ghostty color schemes.
 
-For a multi-file module repo, run the source-aware commands from the repo root or point them at the module directory:
-
-```nu
-use nu-doc-gen *
-
-generate-source-docs nu-salesforce/nu-salesforce nu-salesforce.md
-generate-doc-site nu-salesforce/nu-salesforce site
-generate-doc-site nu-salesforce/nu-salesforce site --light-theme github-light-default --dark-theme github-dark-default
+```nushell
+generate-doc-site <module_path?> <output_dir?> --light-theme <shiki_theme?> --dark-theme <shiki_theme?>
 ```
 
 <details>
-<summary>Supported Themes for `generate-doc-site`</summary>
+<summary>Supported Themes</summary>
 
 
 | Theme | Shiki Name (use in command) | Mode |
