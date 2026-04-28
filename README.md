@@ -21,6 +21,58 @@ generate-doc-site nu-salesforce/nu-salesforce site
 generate-doc-site nu-salesforce/nu-salesforce site --light-theme github-light-default --dark-theme github-dark-default
 ```
 
+<details>
+<summary>Supported Themes for `generate-doc-site`</summary>
+
+
+| Theme | Shiki Name (use in command) | Mode |
+| --- | --- | --- |
+| Ayu Mirage | ayu-mirage | dark |
+| Ayu | ayu-dark | dark |
+| Andromeda | andromeeda | dark |
+| Catppuccin Frappe | catppuccin-frappe | dark |
+| Catppuccin Macchiato | catppuccin-macchiato | dark |
+| Catppuccin Mocha | catppuccin-mocha | dark |
+| Dark+ | dark-plus | dark |
+| Dracula | dracula | dark |
+| Everforest Dark Hard | everforest-dark | dark |
+| GitHub Dark | github-dark | dark |
+| GitHub Dark Default | github-dark-default | dark |
+| GitHub Dark Dimmed | github-dark-dimmed | dark |
+| GitHub Dark High Contrast | github-dark-high-contrast | dark |
+| Gruvbox Dark Hard | gruvbox-dark-hard | dark |
+| Gruvbox Dark | gruvbox-dark-medium | dark |
+| Gruvbox Dark | gruvbox-dark-soft | dark |
+| Horizon | horizon | dark |
+| Kanagawa Dragon | kanagawa-dragon | dark |
+| Kanagawa Wave | kanagawa-wave | dark |
+| Material | material-theme | dark |
+| Material Darker | material-theme-darker | dark |
+| Material Ocean | material-theme-ocean | dark |
+| Night Owl | night-owl | dark |
+| Nord | nord | dark |
+| Poimandres | poimandres | dark |
+| Rose Pine | rose-pine | dark |
+| Rose Pine Moon | rose-pine-moon | dark |
+| Synthwave | synthwave-84 | dark |
+| TokyoNight | tokyo-night | dark |
+| Vesper | vesper | dark |
+| Ayu Light | ayu-light | light |
+| Catppuccin Latte | catppuccin-latte | light |
+| Everforest Light Med | everforest-light | light |
+| GitHub | github-light | light |
+| GitHub Light Default | github-light-default | light |
+| GitHub Light High Contrast | github-light-high-contrast | light |
+| Gruvbox Light Hard | gruvbox-light-hard | light |
+| Gruvbox Light | gruvbox-light-medium | light |
+| Gruvbox Light | gruvbox-light-soft | light |
+| Horizon Bright | horizon-bright | light |
+| Kanagawa Lotus | kanagawa-lotus | light |
+| Night Owlish Light | night-owl-light | light |
+| Rose Pine Dawn | rose-pine-dawn | light |
+
+</details>
+
 ## Installation
 
 I recommend using [Quiver](https://github.com/freepicheep/quiver). If you have quiver installed, add this to your project with `qv add freepicheep/nu-doc-gen`. You can also install it globally with `qv add -g freepicheep/nu-doc-gen` and follow the instructions for adding the module to your `$env.NU_LIB_DIRS` so you can use it at any time.
@@ -92,3 +144,4 @@ jobs:
 - I used LLMs extensively to help with the project.
 - The wonderful [Shiki](https://shiki.style/) project for Nu code block highlighting.
 - The wonderful [Fuse.js](https://www.fusejs.io/) for search.
+- [iTerm2-Color-Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes) for the color palettes for the 43 supported themes.
