@@ -1,6 +1,6 @@
 # HTML page builders for the generated documentation site, including navigation and search metadata.
 
-use text.nu [ count-label html-escape ]
+use text.nu [ count-label html-escape render-doc-text-html ]
 use help-doc.nu [ render-command-html ]
 
 export def render-site-shell [
@@ -10,6 +10,7 @@ export def render-site-shell [
     page_lead: string
     site_version: string
     css_version: string
+    theme_config_json: string
     nav_html: string
     search_index_json: string
     body_html: string
@@ -26,6 +27,11 @@ export def render-site-shell [
         'assets/site.css'
     } else {
         $"assets/site.css?v=(html-escape $css_version)"
+    }
+    let theme_css_href = if (($css_version | str trim) == '') {
+        'assets/theme.css'
+    } else {
+        $"assets/theme.css?v=(html-escape $css_version)"
     }
     let theme_bootstrap = '<script>
     (() => {
@@ -48,6 +54,7 @@ export def render-site-shell [
   <meta name=\"description\" content=\"(html-escape $page_lead)\">
   ($theme_bootstrap)
   <link rel=\"stylesheet\" href=\"($css_href)\">
+  <link rel=\"stylesheet\" href=\"($theme_css_href)\">
 </head>
 <body>
   <div class=\"layout\">
@@ -98,6 +105,7 @@ export def render-site-shell [
       <span data-theme-toggle-label>Theme</span>
     </button>
   </div>
+  <script type=\"application/json\" id=\"theme-config\">($theme_config_json)</script>
   <script type=\"application/json\" id=\"search-index\">($search_index_json)</script>
   <script src=\"assets/fuse.min.js\"></script>
   <script type=\"module\" src=\"assets/site.js\"></script>
@@ -182,7 +190,7 @@ export def render-nav-html [model: record current_slug?: string] {
 </ul>"
 }
 
-export def render-index-page [model: record] {
+export def render-index-page [model: record theme_config_json: string] {
     let overview_items = if (($model.categories | length) == 0) {
         '<div class="empty-state">No exported commands were found.</div>'
     } else {
@@ -191,7 +199,7 @@ export def render-index-page [model: record] {
             let desc = if (($category.description | default '' | str trim) == '') {
                 '<p class="overview-desc">No module description available.</p>'
             } else {
-                $"<p class=\"overview-desc\">(html-escape $category.description)</p>"
+                $"<div class=\"overview-desc\">(render-doc-text-html $category.description)</div>"
             }
             let exported_count = ($category.commands | where is_exported == true | length)
             let internal_count = ($category.commands | where is_exported == false | length)
@@ -230,10 +238,10 @@ export def render-index-page [model: record] {
 <section class=\"overview-list\">($overview_items)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') (render-nav-html $model) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model) (render-search-index-json $model) $body
 }
 
-export def render-category-page [model: record category: record] {
+export def render-category-page [model: record category: record theme_config_json: string] {
     let lead = if (($category.summary | str trim) == '') {
         $'Commands exported from ($category.file | path basename).'
     } else {
@@ -259,5 +267,5 @@ export def render-category-page [model: record category: record] {
 <section class=\"command-stack\">($sections)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') (render-nav-html $model $category.slug) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model $category.slug) (render-search-index-json $model) $body
 }

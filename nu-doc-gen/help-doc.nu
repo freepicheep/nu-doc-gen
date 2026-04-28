@@ -2,6 +2,27 @@
 
 use text.nu *
 
+const help_section_headers = [
+    'Usage'
+    'Subcommands'
+    'Flags'
+    'Signatures'
+    'Parameters'
+    'Input/output types'
+    'Examples'
+    'Command Type'
+]
+
+def is-help-section-header [line: string] {
+    let trimmed = ($line | str trim)
+    let header = ($trimmed | str replace ':' '')
+    let has_colon = ($trimmed | str ends-with ':')
+    let is_left_aligned = not ($line | str starts-with ' ')
+    let is_not_example = not ($line | str starts-with '>')
+
+    $has_colon and ($trimmed != '') and $is_left_aligned and $is_not_example and ($header in $help_section_headers)
+}
+
 export def parse-definition-items [lines: list<string>] {
     $lines
     | where {|line| ($line | str trim) != '' }
@@ -161,10 +182,7 @@ export def parse-help-doc [command_name: string] {
     let first_header_idx = (
         $lines
         | enumerate
-        | where {|row|
-            let trimmed = ($row.item | str trim)
-            ($trimmed | str ends-with ':') and ($trimmed != '') and not ($trimmed | str starts-with '>') and not ($trimmed | str starts-with ' ')
-        }
+        | where {|row| is-help-section-header $row.item }
         | first
         | get index?
         | default ($lines | length)
@@ -176,7 +194,7 @@ export def parse-help-doc [command_name: string] {
         | skip $first_header_idx
         | reduce --fold [] {|line acc|
             let trimmed = ($line | str trim)
-            if ($trimmed | str ends-with ':') and ($trimmed != '') and not ($line | str starts-with ' ') and not ($line | str starts-with '>') {
+            if (is-help-section-header $line) {
                 $acc | append {header: ($trimmed | str replace ':' '') lines: []}
             } else if (($acc | length) == 0) {
                 $acc
@@ -274,7 +292,7 @@ export def render-section-html [section: record] {
             'examples' => { render-examples-html $section.value }
             'io-table' => { render-io-table-html $section.value }
             'definitions' => { render-definition-list-html $section.value }
-            _ => { $"<div class=\"section-text\">(render-paragraphs-html $section.value)</div>" }
+            _ => { $"<div class=\"section-text\">(render-doc-text-html $section.value)</div>" }
         }
     )
 
@@ -290,7 +308,7 @@ export def render-command-html [doc: record] {
     let description = if (($doc.description | str trim) == '') {
         ''
     } else {
-        $"<div class=\"command-description\">(render-paragraphs-html $doc.description)</div>"
+        $"<div class=\"command-description\">(render-doc-text-html $doc.description)</div>"
     }
     let export_badge = if ($doc.is_exported? | default true) {
         ''
