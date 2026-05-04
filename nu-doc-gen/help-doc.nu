@@ -258,7 +258,7 @@ export def render-section-markdown [section: record] {
             'examples' => { render-examples-markdown $section.value }
             'io-table' => { render-io-table-markdown $section.value }
             'definitions' => { render-definition-list-markdown $section.value }
-            _ => { $section.value }
+            _ => { render-doc-text-markdown $section.value }
         }
     )
 
@@ -270,7 +270,11 @@ export def render-section-markdown [section: record] {
 }
 
 export def render-command-markdown [doc: record] {
-    let desc_block = if (($doc.description | str trim) == '') { '' } else { $"\n\n($doc.description)" }
+    let desc_block = if (($doc.description | str trim) == '') {
+        ''
+    } else {
+        $"\n\n(render-doc-text-markdown $doc.description)"
+    }
     let sections_md = (
         $doc.sections
         | each {|section| render-section-markdown $section }

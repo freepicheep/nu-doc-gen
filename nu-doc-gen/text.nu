@@ -69,6 +69,22 @@ export def render-paragraphs-html [text: string] {
     }
 }
 
+def close-doc-preformatted [] {
+    let acc = $in
+
+    if (($acc.pre_lines | length) == 0) {
+        $acc
+    } else {
+        {
+            blocks: ($acc.blocks | append {kind: 'pre' value: ($acc.pre_lines | str join "\n")})
+            paragraph_lines: []
+            list_type: $acc.list_type
+            list_items: $acc.list_items
+            pre_lines: []
+        }
+    }
+}
+
 def close-doc-paragraph [] {
     let acc = $in
 
@@ -77,10 +93,11 @@ def close-doc-paragraph [] {
     } else {
         let paragraph = ($acc.paragraph_lines | str join ' ')
         {
-            blocks: ($acc.blocks | append $"<p>(html-escape $paragraph)</p>")
+            blocks: ($acc.blocks | append {kind: 'paragraph' value: $paragraph})
             paragraph_lines: []
             list_type: $acc.list_type
             list_items: $acc.list_items
+            pre_lines: $acc.pre_lines
         }
     }
 }
@@ -93,46 +110,55 @@ def close-doc-list [] {
     } else {
         let items = (
             $acc.list_items
-            | each {|item| $"<li>(html-escape $item)</li>" }
-            | str join ''
+            | each {|item| $item }
         )
         {
-            blocks: ($acc.blocks | append $"<($acc.list_type)>($items)</($acc.list_type)>")
+            blocks: ($acc.blocks | append {kind: $acc.list_type value: $items})
             paragraph_lines: $acc.paragraph_lines
             list_type: ''
             list_items: []
+            pre_lines: $acc.pre_lines
         }
     }
 }
 
 def close-doc-blocks [] {
-    $in | close-doc-paragraph | close-doc-list
+    $in | close-doc-paragraph | close-doc-list | close-doc-preformatted
 }
 
 def append-doc-list-item [acc: record list_type: string item: string] {
-    let without_paragraph = ($acc | close-doc-paragraph)
-    let ready = if ($without_paragraph.list_type == $list_type) {
-        $without_paragraph
+    let without_open_blocks = ($acc | close-doc-paragraph | close-doc-preformatted)
+    let ready = if ($without_open_blocks.list_type == $list_type) {
+        $without_open_blocks
     } else {
-        $without_paragraph | close-doc-list | merge {list_type: $list_type}
+        $without_open_blocks | close-doc-list | merge {list_type: $list_type}
     }
 
     $ready | merge {list_items: ($ready.list_items | append $item)}
 }
 
 def append-doc-paragraph-line [acc: record line: string] {
-    let without_list = ($acc | close-doc-list)
+    let without_list = ($acc | close-doc-list | close-doc-preformatted)
     $without_list | merge {paragraph_lines: ($without_list.paragraph_lines | append $line)}
 }
 
-export def render-doc-text-html [text: string] {
+def append-doc-pre-line [acc: record line: string] {
+    let without_open_blocks = ($acc | close-doc-paragraph | close-doc-list)
+    $without_open_blocks | merge {pre_lines: ($without_open_blocks.pre_lines | append $line)}
+}
+
+export def parse-doc-blocks [text: string] {
     let state = (
         $text
         | lines
-        | reduce --fold {blocks: [] paragraph_lines: [] list_type: '' list_items: []} {|line, acc|
+        | reduce --fold {blocks: [] paragraph_lines: [] list_type: '' list_items: [] pre_lines: []} {|line, acc|
             let trimmed = ($line | str trim)
+            let is_indented = (($line | str starts-with ' ') or ($line | str starts-with "\t")) and ($trimmed != '')
+
             if ($trimmed == '') {
                 $acc | close-doc-blocks
+            } else if $is_indented {
+                append-doc-pre-line $acc $line
             } else if ($trimmed =~ '^\d+\.\s+') {
                 append-doc-list-item $acc ol ($trimmed | str replace --regex '^\d+\.\s+' '')
             } else if ($trimmed =~ '^[*-]\s+') {
@@ -144,7 +170,59 @@ export def render-doc-text-html [text: string] {
         | close-doc-blocks
     )
 
-    $state.blocks | str join "\n"
+    $state.blocks
+}
+
+export def render-doc-text-html [text: string] {
+    parse-doc-blocks $text
+    | each {|block|
+        match $block.kind {
+            'paragraph' => { $"<p>(html-escape $block.value)</p>" }
+            'pre' => { $"<pre>(html-escape $block.value)</pre>" }
+            'ul' => {
+                let items = (
+                    $block.value
+                    | each {|item| $"<li>(html-escape $item)</li>" }
+                    | str join ''
+                )
+                $"<ul>($items)</ul>"
+            }
+            'ol' => {
+                let items = (
+                    $block.value
+                    | each {|item| $"<li>(html-escape $item)</li>" }
+                    | str join ''
+                )
+                $"<ol>($items)</ol>"
+            }
+            _ => { '' }
+        }
+    }
+    | str join "\n"
+}
+
+export def render-doc-text-markdown [text: string] {
+    parse-doc-blocks $text
+    | each {|block|
+        match $block.kind {
+            'paragraph' => { $block.value }
+            'pre' => { $"```text\n($block.value)\n```" }
+            'ul' => {
+                $block.value
+                | each {|item| $"- $item" }
+                | str join "\n"
+            }
+            'ol' => {
+                $block.value
+                | enumerate
+                | each {|row| $"($row.index + 1). ($row.item)" }
+                | str join "\n"
+            }
+            _ => { '' }
+        }
+    }
+    | where {|block| ($block | str trim) != '' }
+    | str join "\n\n"
 }
 
 export def first-paragraph [text: string] {
