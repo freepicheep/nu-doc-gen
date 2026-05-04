@@ -114,8 +114,9 @@ export def generate-plugin-doc-site [
     output_dir: string = 'site' # the directory to write the static site into
     --light-theme: string = 'rose-pine-dawn' # bundled Shiki light theme name from themes.toml
     --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.toml
+    --exclude-plugin-command # omit the command whose name exactly matches the plugin name
 ] {
-    let model = (collect-plugin-doc-model $plugin_name)
+    let model = (collect-plugin-doc-model $plugin_name $exclude_plugin_command)
     let theme_pair = (resolve-site-theme-pair $light_theme $dark_theme)
     let theme_config_json = (site-theme-config-json $theme_pair)
     let site_dir = ($output_dir | path expand)
@@ -135,9 +136,10 @@ export def generate-plugin-doc-site [
     (site-js) | save --force ([$assets_dir 'site.js'] | path join)
     (open --raw $vendored_fuse_asset) | save --force ([$assets_dir 'fuse.min.js'] | path join)
     (render-index-page $model $theme_config_json) | save --force ([$site_dir 'index.html'] | path join)
-
-    $model.categories | each {|category|
-        (render-category-page $model $category $theme_config_json) | save --force ([$site_dir $"($category.slug).html"] | path join)
+    if (($model.kind? | default '') != 'plugin') {
+        $model.categories | each {|category|
+            (render-category-page $model $category $theme_config_json) | save --force ([$site_dir $"($category.slug).html"] | path join)
+        }
     }
 
     print $'Done! Static site written to: ($site_dir)'

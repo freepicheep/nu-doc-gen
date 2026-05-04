@@ -18,6 +18,8 @@ Build a static HTML/CSS/JS documentation site from a plugin that is already load
 generate-plugin-doc-site <plugin_name> <output_dir?> --light-theme <shiki_theme?> --dark-theme <shiki_theme?>
 ```
 
+If the plugin exposes a top-level command with the same name as the plugin and you want to omit it, add `--exclude-plugin-command`.
+
 <details>
 <summary>Supported Themes</summary>
 
