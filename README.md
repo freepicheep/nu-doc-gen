@@ -1,6 +1,6 @@
 # nu-doc-gen
 
-This is a simple Nu module to generate static site and markdown documentation for Nu modules.
+This is a simple Nu module to generate static site and markdown documentation for Nu modules and loaded Nu plugins.
 
 ## Building a Static Site
 
@@ -8,6 +8,14 @@ Build a static HTML/CSS/JS documentation site from a module repo. Each `.nu` fil
 
 ```nushell
 generate-doc-site <module_path?> <output_dir?> --light-theme <shiki_theme?> --dark-theme <shiki_theme?>
+```
+
+## Building a Plugin Site
+
+Build a static HTML/CSS/JS documentation site from a plugin that is already loaded in the current Nu session. This path reads command names from `plugin list` and builds each command page from runtime `help` output, so source code access is not required.
+
+```nushell
+generate-plugin-doc-site <plugin_name> <output_dir?> --light-theme <shiki_theme?> --dark-theme <shiki_theme?>
 ```
 
 <details>

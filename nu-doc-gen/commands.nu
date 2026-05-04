@@ -2,6 +2,7 @@
 
 use help-doc.nu [parse-help-doc render-command-markdown]
 use module-source.nu [collect-module-doc-model]
+use plugin-runtime.nu [collect-plugin-doc-model]
 use site-assets.nu [site-css site-js]
 use site-pages.nu [render-index-page render-category-page]
 use site-theme.nu [resolve-site-theme-pair site-theme-css site-theme-config-json]
@@ -79,6 +80,42 @@ export def generate-doc-site [
     --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.toml
 ] {
     let model = (collect-module-doc-model $module_path)
+    let theme_pair = (resolve-site-theme-pair $light_theme $dark_theme)
+    let theme_config_json = (site-theme-config-json $theme_pair)
+    let site_dir = ($output_dir | path expand)
+    let assets_dir = ([$site_dir 'assets'] | path join)
+
+    mkdir $site_dir
+    mkdir $assets_dir
+
+    if not ($vendored_fuse_asset | path exists) {
+        error make {
+            msg: $'Missing vendored Fuse asset at ($vendored_fuse_asset).'
+        }
+    }
+
+    (site-css) | save --force ([$assets_dir 'site.css'] | path join)
+    (site-theme-css $theme_pair) | save --force ([$assets_dir 'theme.css'] | path join)
+    (site-js) | save --force ([$assets_dir 'site.js'] | path join)
+    (open --raw $vendored_fuse_asset) | save --force ([$assets_dir 'fuse.min.js'] | path join)
+    (render-index-page $model $theme_config_json) | save --force ([$site_dir 'index.html'] | path join)
+
+    $model.categories | each {|category|
+        (render-category-page $model $category $theme_config_json) | save --force ([$site_dir $"($category.slug).html"] | path join)
+    }
+
+    print $'Done! Static site written to: ($site_dir)'
+}
+
+# Generate a static documentation site for an already-loaded Nushell plugin.
+@example "Generate a static site for a loaded plugin" { generate-plugin-doc-site polars site }
+export def generate-plugin-doc-site [
+    plugin_name: string # loaded plugin name from `plugin list`
+    output_dir: string = 'site' # the directory to write the static site into
+    --light-theme: string = 'rose-pine-dawn' # bundled Shiki light theme name from themes.toml
+    --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.toml
+] {
+    let model = (collect-plugin-doc-model $plugin_name)
     let theme_pair = (resolve-site-theme-pair $light_theme $dark_theme)
     let theme_config_json = (site-theme-config-json $theme_pair)
     let site_dir = ($output_dir | path expand)

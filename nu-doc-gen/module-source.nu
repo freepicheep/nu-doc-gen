@@ -218,6 +218,7 @@ export def collect-module-doc-model [module_path: string] {
     )
 
     {
+        kind: 'module'
         name: $module_name
         module_dir: $module_dir
         summary: (extract-file-summary $mod_file)

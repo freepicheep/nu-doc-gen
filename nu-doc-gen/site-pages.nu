@@ -4,6 +4,7 @@ use text.nu [ count-label html-escape render-doc-text-html ]
 use help-doc.nu [ render-command-html ]
 
 export def render-site-shell [
+    site_label: string
     site_title: string
     site_summary: string
     page_title: string
@@ -60,7 +61,7 @@ export def render-site-shell [
   <div class=\"layout\">
     <aside class=\"sidebar\">
       <div class=\"sidebar-header\">
-        <p class=\"eyebrow\">Nu Module Docs</p>
+        <p class=\"eyebrow\">(html-escape $site_label)</p>
         <h1 class=\"site-title\">(html-escape $site_title)($version_html)</h1>
         ($summary_html)
       </div>
@@ -192,23 +193,35 @@ export def render-nav-html [model: record current_slug?: string] {
 
 export def render-index-page [model: record theme_config_json: string] {
     let overview_items = if (($model.categories | length) == 0) {
-        '<div class="empty-state">No exported commands were found.</div>'
+        if (($model.kind? | default 'module') == 'plugin') {
+            '<div class="empty-state">No plugin commands were found.</div>'
+        } else {
+            '<div class="empty-state">No exported commands were found.</div>'
+        }
     } else {
         $model.categories
         | each {|category|
             let desc = if (($category.description | default '' | str trim) == '') {
-                '<p class="overview-desc">No module description available.</p>'
+                if (($model.kind? | default 'module') == 'plugin') {
+                    '<p class="overview-desc">No plugin description available.</p>'
+                } else {
+                    '<p class="overview-desc">No module description available.</p>'
+                }
             } else {
                 $"<div class=\"overview-desc\">(render-doc-text-html $category.description)</div>"
             }
-            let exported_count = ($category.commands | where is_exported == true | length)
-            let internal_count = ($category.commands | where is_exported == false | length)
-            let exported_label = (count-label $exported_count 'exported command' 'exported commands')
-            let internal_label = (count-label $internal_count 'internal command' 'internal commands')
-            let meta = if $internal_count == 0 {
-                $exported_label
+            let meta = if (($model.kind? | default 'module') == 'plugin') {
+                count-label ($category.commands | length) 'command' 'commands'
             } else {
-                $"($exported_label), ($internal_label)"
+                let exported_count = ($category.commands | where is_exported == true | length)
+                let internal_count = ($category.commands | where is_exported == false | length)
+                let exported_label = (count-label $exported_count 'exported command' 'exported commands')
+                let internal_label = (count-label $internal_count 'internal command' 'internal commands')
+                if $internal_count == 0 {
+                    $exported_label
+                } else {
+                    $"($exported_label), ($internal_label)"
+                }
             }
             $"<article class=\"overview-item\">
   <h2>(html-escape $category.title)</h2>
@@ -221,42 +234,69 @@ export def render-index-page [model: record theme_config_json: string] {
     }
 
     let lead = if (($model.summary | str trim) == '') {
-        'Generated from Nushell source files and command help.'
+        if (($model.kind? | default 'module') == 'plugin') {
+            'Generated from a loaded Nushell plugin and runtime help output.'
+        } else {
+            'Generated from Nushell source files and command help.'
+        }
     } else {
         $model.summary
     }
 
-    let strip = [
-        $"<span class=\"summary-pill\">(count-label $model.total_commands 'total command' 'total commands')</span>"
-        $"<span class=\"summary-pill\">(count-label ($model.exported_commands | length) 'exported command' 'exported commands')</span>"
-        $"<span class=\"summary-pill\">(count-label $model.internal_commands 'internal command' 'internal commands')</span>"
-        $"<span class=\"summary-pill\">(count-label ($model.categories | length) 'category' 'categories')</span>"
-        $"<span class=\"summary-pill\">Source mode: (if $model.source_mode { 'multi-file' } else { 'single-file' })</span>"
-    ] | str join "\n"
+    let strip = if (($model.kind? | default 'module') == 'plugin') {
+        [
+            $"<span class=\"summary-pill\">(count-label $model.total_commands 'command' 'commands')</span>"
+            $"<span class=\"summary-pill\">(count-label ($model.categories | length) 'section' 'sections')</span>"
+            $"<span class=\"summary-pill\">Source: (html-escape ($model.source_label? | default 'plugin runtime'))</span>"
+        ] | str join "\n"
+    } else {
+        [
+            $"<span class=\"summary-pill\">(count-label $model.total_commands 'total command' 'total commands')</span>"
+            $"<span class=\"summary-pill\">(count-label ($model.exported_commands | length) 'exported command' 'exported commands')</span>"
+            $"<span class=\"summary-pill\">(count-label $model.internal_commands 'internal command' 'internal commands')</span>"
+            $"<span class=\"summary-pill\">(count-label ($model.categories | length) 'category' 'categories')</span>"
+            $"<span class=\"summary-pill\">Source mode: (if $model.source_mode { 'multi-file' } else { 'single-file' })</span>"
+        ] | str join "\n"
+    }
 
     let body = $"<div class=\"summary-strip\">($strip)</div>
 <section class=\"overview-list\">($overview_items)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model) (render-search-index-json $model) $body
+    render-site-shell ($model.site_label? | default 'Nu Module Docs') $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model) (render-search-index-json $model) $body
 }
 
 export def render-category-page [model: record category: record theme_config_json: string] {
     let lead = if (($category.summary | str trim) == '') {
-        $'Commands exported from ($category.file | path basename).'
+        if (($model.kind? | default 'module') == 'plugin') {
+            $'Commands exposed by the loaded ($model.name) plugin.'
+        } else {
+            $'Commands exported from ($category.file | path basename).'
+        }
     } else {
         $category.summary
     }
-    let exported_count = ($category.commands | where is_exported == true | length)
-    let internal_count = ($category.commands | where is_exported == false | length)
-    let strip = [
-        $"<span class=\"summary-pill\">File: <code>(html-escape ($category.file | path basename))</code></span>"
-        $"<span class=\"summary-pill\">(count-label $exported_count 'exported command' 'exported commands')</span>"
-        $"<span class=\"summary-pill\">(count-label $internal_count 'internal command' 'internal commands')</span>"
-    ] | str join "\n"
+    let strip = if (($model.kind? | default 'module') == 'plugin') {
+        [
+            $"<span class=\"summary-pill\">Plugin: <code>(html-escape $model.name)</code></span>"
+            $"<span class=\"summary-pill\">(count-label ($category.commands | length) 'command' 'commands')</span>"
+        ] | str join "\n"
+    } else {
+        let exported_count = ($category.commands | where is_exported == true | length)
+        let internal_count = ($category.commands | where is_exported == false | length)
+        [
+            $"<span class=\"summary-pill\">File: <code>(html-escape ($category.file | path basename))</code></span>"
+            $"<span class=\"summary-pill\">(count-label $exported_count 'exported command' 'exported commands')</span>"
+            $"<span class=\"summary-pill\">(count-label $internal_count 'internal command' 'internal commands')</span>"
+        ] | str join "\n"
+    }
 
     let sections = if (($category.commands | length) == 0) {
-        '<div class="empty-state">No exported commands were found in this file.</div>'
+        if (($model.kind? | default 'module') == 'plugin') {
+            '<div class="empty-state">No plugin commands were found in this section.</div>'
+        } else {
+            '<div class="empty-state">No exported commands were found in this file.</div>'
+        }
     } else {
         $category.commands
         | each {|command| render-command-html $command }
@@ -267,5 +307,5 @@ export def render-category-page [model: record category: record theme_config_jso
 <section class=\"command-stack\">($sections)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model $category.slug) (render-search-index-json $model) $body
+    render-site-shell ($model.site_label? | default 'Nu Module Docs') $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model $category.slug) (render-search-index-json $model) $body
 }
