@@ -1,0 +1,12 @@
+{
+  package: {
+    name: nu-doc-gen,
+    version: "0.3.2",
+    description: "Creates a nice static documentation site for your Nu module",
+    license: MIT,
+    authors: [
+      "Friedrich Stoltzfus"
+    ],
+    nu-version: "0.112.2"
+  }
+}
