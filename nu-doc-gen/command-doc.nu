@@ -39,12 +39,48 @@ def signature-usage [command_name: string, signature: table]: nothing -> string 
     | str join ' '
 }
 
-def default-suffix [param: record]: nothing -> string {
-    if $param.parameter_default == null {
-        ''
+def format-default-value [value: any]: nothing -> string {
+    if ($value | describe) == 'string' {
+        $"'($value)'"
     } else {
-        let rendered = ($param.parameter_default | to nuon)
-        $" \(default: ($rendered)\)"
+        $value | to nuon
+    }
+}
+
+def positional-description [param: record]: nothing -> string {
+    let base = ($param.description | default '')
+    let is_optional = ($param.parameter_type == 'positional') and $param.is_optional
+    let has_default = $param.parameter_default != null
+    let suffix = if $is_optional and $has_default {
+        $"\(optional, default: (format-default-value $param.parameter_default)\)"
+    } else if $is_optional {
+        '(optional)'
+    } else if $has_default {
+        $"\(default: (format-default-value $param.parameter_default)\)"
+    } else {
+        ''
+    }
+
+    if $suffix == '' {
+        $base
+    } else if ($base | str trim) == '' {
+        $suffix
+    } else {
+        $"($base) ($suffix)"
+    }
+}
+
+def flag-description [param: record]: nothing -> string {
+    let base = ($param.description | default '')
+    if $param.parameter_default == null {
+        $base
+    } else {
+        let suffix = $"\(default: (format-default-value $param.parameter_default)\)"
+        if ($base | str trim) == '' {
+            $suffix
+        } else {
+            $"($base) ($suffix)"
+        }
     }
 }
 
@@ -61,10 +97,9 @@ def signature-params [signature: table]: nothing -> list {
     | append $rest
     | each {|p|
         let prefix = if $p.parameter_type == 'rest' { '...' } else { '' }
-        let optional_marker = if (($p.parameter_type == 'positional') and $p.is_optional) { '?' } else { '' }
         {
-            name: $"($prefix)($p.parameter_name)($optional_marker)(shape-suffix $p)(default-suffix $p)"
-            description: ($p.description | default '')
+            name: $"($prefix)($p.parameter_name)(shape-suffix $p)"
+            description: (positional-description $p)
         }
     }
 }
@@ -79,8 +114,8 @@ def signature-flags [signature: table]: nothing -> list {
         let short = if $p.short_flag == null { '' } else { $" \(-($p.short_flag)\)" }
         let value = if $p.parameter_type == 'switch' { '' } else { (shape-suffix $p) }
         {
-            name: $"--($p.parameter_name)($short)($value)(default-suffix $p)"
-            description: ($p.description | default '')
+            name: $"--($p.parameter_name)($short)($value)"
+            description: (flag-description $p)
         }
     }
 }
