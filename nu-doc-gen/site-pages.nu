@@ -1,7 +1,7 @@
 # HTML page builders for the generated documentation site, including navigation and search metadata.
 
 use text.nu [ count-label html-escape render-doc-text-html ]
-use help-doc.nu [ render-command-html ]
+use command-doc.nu [ render-command-html ]
 
 export def render-site-shell [
     site_title: string

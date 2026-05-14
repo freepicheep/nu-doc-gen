@@ -1,6 +1,6 @@
 # Exported commands for generating module docs, source-based docs, static doc sites, and pager views.
 
-use help-doc.nu [parse-help-doc render-command-markdown]
+use command-doc.nu [build-command-doc render-command-markdown]
 use module-source.nu [collect-module-doc-model]
 use site-assets.nu [site-css site-js]
 use site-pages.nu [render-index-page render-category-page]
@@ -33,7 +33,12 @@ export def generate-module-docs [
 
     $commands | each {|command_name|
         print $'  -> ($command_name)'
-        let doc = (help $command_name | ansi strip | parse-help-doc $command_name)
+        let doc = (
+            scope commands
+            | where name == $command_name
+            | first
+            | build-command-doc
+        )
         $"(render-command-markdown $doc)\n\n---\n\n" | save --append $output_file
     }
 
@@ -111,13 +116,29 @@ export def generate-doc-site [
 export def view-docs [
     module_name: string # the module you want to explore
 ] {
-    let docs = (
+    let commands = (
         scope modules
         | where name == $module_name
         | get commands
         | flatten
         | get name
-        | each { $"($in)\n\n(help $in)------------------\n\n" }
+    )
+
+    if (($commands | length) == 0) {
+        error make {msg: $'No module named ''($module_name)'' found in scope.'}
+    }
+
+    let docs = (
+        $commands
+        | each {|command_name|
+            let doc = (
+                scope commands
+                | where name == $command_name
+                | first
+                | build-command-doc
+            )
+            $"(render-command-markdown $doc)\n\n---\n\n"
+        }
         | str join
     )
 

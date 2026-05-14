@@ -1,7 +1,7 @@
 # Source inspection and runtime metadata helpers for building a documentation model from Nushell modules.
 
 use text.nu [ quote-nu-string slugify first-paragraph strip-comment-prefix ]
-use help-doc.nu [ parse-help-doc ]
+use command-doc.nu [ build-command-doc ]
 
 const nu_doc_gen_dir = ((path self) | path dirname)
 
@@ -130,17 +130,25 @@ export def nu-doc-gen-version [] {
     package-version $nu_doc_gen_dir
 }
 
-export def collect-file-commands [file_path: string] {
-    let file_literal = (quote-nu-string ($file_path | path expand))
-    let before_stdout = (run-nu-script 'scope commands | where type == custom | select name | get name | to nuon' | str trim)
-    let after_stdout = (run-nu-script $'use ($file_literal) *; scope commands | where type == custom | select name decl_id | sort-by decl_id | get name | to nuon' | str trim)
+export def baseline-custom-command-names [] {
+    let stdout = (run-nu-script 'scope commands | where type == custom | get name | to nuon' | str trim)
 
-    if $after_stdout == '' {
+    if $stdout == '' {
         []
     } else {
-        let before_names = if $before_stdout == '' { [] } else { $before_stdout | from nuon }
-        let after_names = ($after_stdout | from nuon)
-        $after_names | where {|command_name| $command_name not-in $before_names }
+        $stdout | from nuon
+    }
+}
+
+export def collect-file-command-records [file_path: string, baseline: list<string>] {
+    let file_literal = (quote-nu-string ($file_path | path expand))
+    let script = $"use ($file_literal) *; scope commands | where type == custom | sort-by decl_id | to nuon"
+    let stdout = (run-nu-script $script | str trim)
+
+    if $stdout == '' {
+        []
+    } else {
+        $stdout | from nuon | where name not-in $baseline
     }
 }
 
@@ -157,13 +165,6 @@ export def collect-module-exported-commands [mod_file: string] {
     } else {
         $exported_stdout | from nuon
     }
-}
-
-export def collect-command-doc [file_path: string command_name: string] {
-    let file_literal = (quote-nu-string ($file_path | path expand))
-    let command_literal = (quote-nu-string $command_name)
-    let help_output = (run-nu-script $'use ($file_literal) *; help ($command_literal) | ansi strip')
-    $help_output | parse-help-doc $command_name
 }
 
 export def collect-file-description [file_path: string] {
@@ -189,12 +190,13 @@ export def collect-module-doc-model [module_path: string] {
     let module_name = ($module_dir | path basename)
     let files = (module-files $module_dir)
     let exported_commands = (collect-module-exported-commands $mod_file)
+    let baseline = (baseline-custom-command-names)
 
     let categories = (
         $files
         | each {|file_path|
-            let commands = (collect-file-commands $file_path)
-            if (($commands | length) == 0) {
+            let records = (collect-file-command-records $file_path $baseline)
+            if (($records | length) == 0) {
                 null
             } else {
                 let title = ($file_path | path parse | get stem)
@@ -205,10 +207,11 @@ export def collect-module-doc-model [module_path: string] {
                     description: (collect-file-description $file_path)
                     summary: (extract-file-summary $file_path)
                     commands: (
-                        $commands
-                        | each {|command_name|
-                            collect-command-doc $file_path $command_name
-                            | merge {is_exported: ($command_name in $exported_commands)}
+                        $records
+                        | each {|record|
+                            $record
+                            | build-command-doc
+                            | merge {is_exported: ($record.name in $exported_commands)}
                         }
                     )
                 }

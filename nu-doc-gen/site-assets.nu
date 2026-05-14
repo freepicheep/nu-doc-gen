@@ -599,14 +599,51 @@ code {
     background: var(--table-stripe);
 }
 
+.example-block {
+    margin-top: 0.95rem;
+}
+
 .example-block + .example-block {
-    margin-top: 1rem;
+    margin-top: 1.4rem;
 }
 
 .example-label {
     margin: 0 0 0.45rem;
     font-size: 0.95rem;
     color: var(--muted);
+}
+
+.example-result {
+    margin-top: 0.55rem;
+}
+
+.example-result-tag {
+    display: block;
+    margin: 0 0 0.3rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.example-result-tag::before {
+    content: "↳ ";
+    margin-right: 0.15rem;
+}
+
+.example-result-body {
+    margin: 0;
+    padding: 0.75rem 0.95rem;
+    background: var(--surface-strong);
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.25;
+}
+
+.example-result-body code {
+    background: none;
+    color: inherit;
 }
 
 .empty-state {
