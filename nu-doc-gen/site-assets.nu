@@ -518,6 +518,27 @@ pre[data-shiki-lang] {
     min-height: 1.5rem;
 }
 
+pre[data-shiki-lang="nushell"] {
+    overflow: visible;
+    height: auto;
+    max-height: none;
+    white-space: normal;
+}
+
+pre[data-shiki-lang="nushell"] code {
+    display: block;
+    width: auto;
+    white-space: normal;
+}
+
+pre[data-shiki-lang="nushell"] .line {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
+}
+
 code {
     font-size: 0.94em;
 }
