@@ -7,6 +7,6 @@
     authors: [
       "Friedrich Stoltzfus"
     ],
-    nu-version: "0.112.2"
+    nu-version: ">=0.113.0"
   }
 }
