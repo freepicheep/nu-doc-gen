@@ -1,5 +1,43 @@
 # Bundled CSS and JavaScript assets for the generated static documentation site.
 
+use text.nu [ html-escape ]
+
+# Derive favicon glyphs from a module name, or pass through an explicit override.
+# With no override the first letter of each '-', '_', or space separated segment is
+# taken (uppercased, capped at three glyphs); "nu-doc-gen" becomes "NDG".
+export def favicon-text [name: string override: string] {
+    if (($override | str trim) != '') {
+        $override | str trim
+    } else {
+        $name
+        | split row --regex '[-_[:space:]]+'
+        | where {|segment| ($segment | str trim) != '' }
+        | each {|segment| $segment | str substring 0..0 }
+        | str join
+        | str upcase
+        | str substring 0..2
+    }
+}
+
+# Build an initials favicon as an SVG document that swaps colors with the preferred
+# color scheme so it tracks the site's light/dark themes. Written to assets/favicon.svg.
+export def favicon-svg [
+    text: string
+    light_bg: string
+    light_fg: string
+    dark_bg: string
+    dark_fg: string
+] {
+    let glyphs = (html-escape $text)
+    let font_size = (match ($text | str length) {
+        0 | 1 => 38
+        2 => 30
+        3 => 24
+        _ => 18
+    })
+    $"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><style>rect{fill:($light_bg)}text{fill:($light_fg)}@media \(prefers-color-scheme:dark\){rect{fill:($dark_bg)}text{fill:($dark_fg)}}</style><rect width='64' height='64' rx='14'/><text x='32' y='33' font-family='Inter,ui-sans-serif,system-ui,-apple-system,sans-serif' font-size='($font_size)' font-weight='700' text-anchor='middle' dominant-baseline='central'>($glyphs)</text></svg>"
+}
+
 export def site-css [] {
 '
 :root {

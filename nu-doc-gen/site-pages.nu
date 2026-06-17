@@ -13,6 +13,7 @@ export def render-site-shell [
     theme_config_json: string
     nav_html: string
     search_index_json: string
+    favicon_href: string
     body_html: string
 ]: nothing -> string {
     let summary_html = if (($site_summary | str trim) == '') { '' } else { $"<p class=\"site-summary\">(html-escape $site_summary)</p>" }
@@ -52,6 +53,7 @@ export def render-site-shell [
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
   <title>($title_html)</title>
   <meta name=\"description\" content=\"(html-escape $page_lead)\">
+  <link rel=\"icon\" type=\"image/svg+xml\" href=\"($favicon_href)\">
   ($theme_bootstrap)
   <link rel=\"stylesheet\" href=\"($css_href)\">
   <link rel=\"stylesheet\" href=\"($theme_css_href)\">
@@ -190,7 +192,7 @@ export def render-nav-html [model: record current_slug?: string] {
 </ul>"
 }
 
-export def render-index-page [model: record theme_config_json: string] {
+export def render-index-page [model: record theme_config_json: string favicon_href: string] {
     let overview_items = if (($model.categories | length) == 0) {
         '<div class="empty-state">No exported commands were found.</div>'
     } else {
@@ -238,10 +240,10 @@ export def render-index-page [model: record theme_config_json: string] {
 <section class=\"overview-list\">($overview_items)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $model.name $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model) (render-search-index-json $model) $favicon_href $body
 }
 
-export def render-category-page [model: record category: record theme_config_json: string] {
+export def render-category-page [model: record category: record theme_config_json: string favicon_href: string] {
     let lead = if (($category.summary | str trim) == '') {
         $'Commands exported from ($category.file | path basename).'
     } else {
@@ -267,5 +269,5 @@ export def render-category-page [model: record category: record theme_config_jso
 <section class=\"command-stack\">($sections)
 </section>"
 
-    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model $category.slug) (render-search-index-json $model) $body
+    render-site-shell $model.name $model.summary_short $category.title $lead ($model.package_version? | default '') ($model.nu_doc_gen_version? | default '') $theme_config_json (render-nav-html $model $category.slug) (render-search-index-json $model) $favicon_href $body
 }

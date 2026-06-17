@@ -2,7 +2,7 @@
 
 use command-doc.nu [build-command-doc render-command-markdown]
 use module-source.nu [collect-module-doc-model]
-use site-assets.nu [site-css site-js]
+use site-assets.nu [site-css site-js favicon-text favicon-svg]
 use site-pages.nu [render-index-page render-category-page]
 use site-theme.nu [resolve-site-theme-pair site-theme-css site-theme-config-json]
 
@@ -82,10 +82,13 @@ export def generate-doc-site [
     output_dir: string = 'site' # the directory to write the static site into
     --light-theme: string = 'rose-pine-dawn' # bundled Shiki light theme name from themes.toml
     --dark-theme: string = 'rose-pine' # bundled Shiki dark theme name from themes.toml
+    --favicon-text: string = '' # override favicon glyphs (defaults to the module name's initials)
 ] {
     let model = (collect-module-doc-model $module_path)
     let theme_pair = (resolve-site-theme-pair $light_theme $dark_theme)
     let theme_config_json = (site-theme-config-json $theme_pair)
+    let favicon_svg = (favicon-svg (favicon-text $model.name $favicon_text) $theme_pair.light.css.accent_strong $theme_pair.light.css.bg $theme_pair.dark.css.accent_strong $theme_pair.dark.css.bg)
+    let favicon_href = 'assets/favicon.svg'
     let site_dir = ($output_dir | path expand)
     let assets_dir = ([$site_dir 'assets'] | path join)
 
@@ -101,11 +104,12 @@ export def generate-doc-site [
     (site-css) | save --force ([$assets_dir 'site.css'] | path join)
     (site-theme-css $theme_pair) | save --force ([$assets_dir 'theme.css'] | path join)
     (site-js) | save --force ([$assets_dir 'site.js'] | path join)
+    $favicon_svg | save --force ([$assets_dir 'favicon.svg'] | path join)
     (open --raw $vendored_fuse_asset) | save --force ([$assets_dir 'fuse.min.js'] | path join)
-    (render-index-page $model $theme_config_json) | save --force ([$site_dir 'index.html'] | path join)
+    (render-index-page $model $theme_config_json $favicon_href) | save --force ([$site_dir 'index.html'] | path join)
 
     $model.categories | each {|category|
-        (render-category-page $model $category $theme_config_json) | save --force ([$site_dir $"($category.slug).html"] | path join)
+        (render-category-page $model $category $theme_config_json $favicon_href) | save --force ([$site_dir $"($category.slug).html"] | path join)
     }
 
     print $'Done! Static site written to: ($site_dir)'
